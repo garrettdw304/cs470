@@ -1,3 +1,5 @@
+import math
+
 import pygame
 from OpenGL.raw.GLU import gluLookAt, gluPerspective
 from pygame.locals import *
@@ -12,12 +14,19 @@ def draw_at(draw_func, posx, posy, posz):
     draw_func()
     glPopMatrix()
 
-def draw_human():
+def draw_human(waving):
     draw_at(draw_human_body, 0.0, 1.077047348022461, 0.0)
     draw_at(draw_human_head, 0.0, 1.5884544849395752, 0.0)
     draw_at(draw_human_leg, -0.10163211822509766, 0.35725346207618713, 0.0) # RIGHT
     draw_at(draw_human_leg, 0.10305744409561157, 0.35725346207618713, 0.0) # LEFT
-    draw_at(draw_human_arm, -0.24160023033618927, 1.3946691751480103, 0.0) # RIGHT
+    if waving:
+        glPushMatrix()
+        glTranslate(-0.24160023033618927, 1.3946691751480103, 0.0)
+        glRotate(math.fabs(math.sin(time / 1000)) * -180, 0, 0, 1)
+        draw_human_arm()  # RIGHT
+        glPopMatrix()
+    else:
+        draw_at(draw_human_arm, -0.24160023033618927, 1.3946691751480103, 0.0) # RIGHT
     draw_at(draw_human_arm, 0.2405424416065216, 1.3946691751480103, 0.0) # LEFT
 
 def draw_human_body():
@@ -977,7 +986,7 @@ def main():
             pos = lerp(t, car.pos, car.dest)
             draw_at(draw_car, *pos)
         glRotate(rot, 0, 1, 0)
-        draw_human()
+        draw_human(True)
         pygame.display.flip()
 
         # Wait for next frame
