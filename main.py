@@ -2,6 +2,7 @@ import pygame
 from OpenGL.raw.GLU import gluLookAt, gluPerspective
 from pygame.locals import *
 from OpenGL.GL import *
+# from PIL import Image
 
 global time # time since beginning of program in ms
 
@@ -920,10 +921,27 @@ def draw_car_body():
     glVertex3f(1.7830555438995361, 0.10074366629123688, 0.9999999403953552)
     glEnd()
 
+class Car:
+    time_to_finished = 5000
+    start_time = 0
+    pos = [0, 0, 0]
+    dest = [0, 0, 0]
+    def __init__(self, start_time, start_position, destination):
+        self.pos = start_position
+        self.dest = destination
+        self.start_time = start_time
+
+def lerp(t, a, b):
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+
 def main():
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+
+    # car_texture = Image.open("Car.png")
+    # human_texture = Image.open("Human.png")
+    cars = []
 
     global time; time = 0
     frame_len = 10 # Frame length in ms
@@ -940,6 +958,8 @@ def main():
                     rot += 15
                 elif event.key == pygame.K_LEFT:
                     rot -= 15
+                if event.key == pygame.K_k:
+                    cars.append(Car(time, [-15, 0, 0], [15, 0, 0])) # TODO: Set start and dest
 
         # Render
         glClear(GL_COLOR_BUFFER_BIT)
@@ -950,6 +970,12 @@ def main():
         glLoadIdentity()
         # Render functions
         gluLookAt(0, 0, 10, 0, 0, 0, 0, 1, 0)
+        for car in cars:
+            t = (time - car.start_time) / car.time_to_finished
+            if t >= car.time_to_finished:
+                cars.remove(car)
+            pos = lerp(t, car.pos, car.dest)
+            draw_at(draw_car, *pos)
         glRotate(rot, 0, 1, 0)
         draw_human()
         pygame.display.flip()
