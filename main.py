@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import List, Sequence
 
@@ -14,6 +15,19 @@ def draw_at(draw_func, posx, posy, posz):
     glTranslate(posx, posy, posz)
     draw_func()
     glPopMatrix()
+
+def draw_human(human, human_body_model, human_arm_model):
+    global time
+    if human.is_waving:
+        glPushMatrix()
+        glTranslate(-0.24308, 1.3941, 0)
+        wave_speed = 2
+        glRotate(math.fabs(math.sin((time - human.started_waving) / 1000 * wave_speed)) * -180, 0, 0, 1)
+        draw_model(human_arm_model)
+        glPopMatrix()
+    else:
+        draw_at(lambda: draw_model(human_arm_model), -0.24308, 1.3941, 0)
+    draw_model(human_body_model)
 
 @dataclass
 class Material:
@@ -203,7 +217,6 @@ def main():
     cars = []
     # Store human state
     human = Human()
-    human.start_waving(time) # TODO: Decide when to wave
 
     # Import models
     car_model = Mesh.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
@@ -224,6 +237,9 @@ def main():
                     rot -= 15
                 if event.key == pygame.K_k:
                     cars.append(Car(time, [-15, 0, 0], [15, 0, 0])) # TODO: Set start and dest
+                if event.key == pygame.K_h:
+                    if human.is_waving: human.stop_waving()
+                    else: human.start_waving(time)
 
         # Render
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -242,8 +258,8 @@ def main():
             pos = lerp(t, car.pos, car.dest)
             draw_at(lambda: draw_model(car_model), *pos)
         glRotate(rot, 0, 1, 0)
-        draw_at(lambda: draw_model(human_body_model), 0, 0, 0) # TODO: Set human position
-        draw_model(car_model)
+        draw_at(lambda: draw_human(human, human_body_model, human_arm_model), 0, 0, 0) # TODO: Set human position
+        draw_at(lambda: draw_model(car_model), 0, 2, 0) # This can be removed, it is simply demoing the car model. We can add cars to the scene by adding them to the cars array.
         pygame.display.flip()
 
         # Wait for next frame
