@@ -472,6 +472,22 @@ def prtStraightTrack(pillar):
 
     glPopMatrix()
 
+def prtLight():
+    glPushMatrix()
+
+    glColor3f(0.8, 0.8, 0.8)
+
+    glRotatef(90, 1, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 5, 20, 1)
+
+    glColor3f(0.6, 0.6, 0.6)
+
+    glTranslatef(0.5, 0, 0)
+    cube(2, 1, 0.2)
+
+    glPopMatrix()
+
 def main():
     global rotation
     rotation = 0
@@ -582,11 +598,19 @@ def main():
         prtStraightTrack(False)
 
         glPushMatrix()
+        glTranslatef(0, 7, -5)
+        prtLight()
+        glTranslatef(0, 0, 13)
+        glRotatef(180, 0, 1, 0)
+        prtLight()
+        glPopMatrix()
+
+        glPushMatrix()
         glTranslatef(0, 0, -6)
         for i in range(1,19):
-            glScalef(1, 1, 0.2)
+            glScalef(1, 1, 0.333)
             prtStraightTrack(False)
-            glScalef(1, 1, 5)
+            glScalef(1, 1, 3)
             glRotatef(5, 0, 1, 0)
             glTranslatef(0, 0, -1)
         glTranslatef(0, 0, -5)
@@ -596,9 +620,9 @@ def main():
         glPushMatrix()
         glTranslatef(0, 0, 16)
         for i in range(1,19):
-            glScalef(1, 1, 0.2)
+            glScalef(1, 1, 0.333)
             prtStraightTrack(False)
-            glScalef(1, 1, 5)
+            glScalef(1, 1, 3)
             glRotatef(5, 0, 1, 0)
             glTranslatef(0, 0, 1)
         glTranslatef(0, 0, 5)
