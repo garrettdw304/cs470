@@ -40,6 +40,13 @@ class Material:
     dissolve_index : float # Dissolve Index (transparency)
     illum : int
 
+    def bind(self):
+        glMaterial(GL_FRONT, GL_SPECULAR, self.specular_reflection)
+        glMaterial(GL_FRONT, GL_AMBIENT, self.ambient_reflection)
+        glMaterial(GL_FRONT, GL_DIFFUSE, self.diffused_reflection)
+        glMaterial(GL_FRONT, GL_SHININESS, [self.specular_exponent])
+        glMaterial(GL_FRONT, GL_EMISSION, self.emissive_material)
+
     @staticmethod
     def load(mtl_file):
         specular_exponent = 1
@@ -154,6 +161,7 @@ class Mesh:
 
 def draw_model(model : Mesh):
     model.bind_texture()
+    model.material.bind()
     length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
     for face in model.faces:
         if len(face) != length:
