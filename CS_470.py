@@ -2,7 +2,6 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import math
 import time
 
 def cube(xSize, ySize, zSize):
@@ -51,7 +50,9 @@ def cube(xSize, ySize, zSize):
 def prtCar():
     glTranslatef(0, 0, 0.5)
 
-    glColor3f(1.0, 1.0, 0)
+    #glColor3f(1.0, 1.0, 0)
+    setMaterial(1.0, 1.0, 0)
+
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
     glVertex3f(-0.7, 0.2, 0)
@@ -59,7 +60,9 @@ def prtCar():
     glVertex3f(0.5, 0, 0)
     glEnd()
 
-    glColor3f(0, 0, 1.0)
+    #glColor3f(0, 0, 1.0)
+    setMaterial(0, 0, 1.0)
+
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
     glVertex3f(-0.95, 0.8, 0)
@@ -104,7 +107,9 @@ def prtCar():
 
     glTranslatef(0, 0, -1)
 
-    glColor3f(1.0, 1.0, 0)
+    #glColor3f(1.0, 1.0, 0)
+    setMaterial(1.0, 1.0, 0)
+    
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
     glVertex3f(-0.7, 0.2, 0)
@@ -112,7 +117,9 @@ def prtCar():
     glVertex3f(0.5, 0, 0)
     glEnd()
 
-    glColor3f(0, 0, 1.0)
+    #glColor3f(0, 0, 1.0)
+    setMaterial(0, 0, 1.0)
+
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
     glVertex3f(-0.95, 0.8, 0)
@@ -155,7 +162,8 @@ def prtCar():
     glVertex3f(0, 0.8, 0)
     glEnd()
 
-    glColor3f(1, 1, 0)
+    #glColor3f(1, 1, 0)
+    setMaterial(1, 1, 0)
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.91, 1.3, 0)
@@ -212,7 +220,8 @@ def prtCar():
     glVertex3f(-0.96, 0.7, 1)
     glEnd()
 
-    glColor3f(0.3, 0.3, 0.3)
+    #glColor3f(0.3, 0.3, 0.3)
+    setMaterial(0.3, 0.3, 0.3)
 
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -249,7 +258,8 @@ def prtCar():
     glVertex3f(0.7, 0.2, 1)
     glEnd()
 
-    glColor3f(1, 1, 0.8)
+    #glColor3f(1, 1, 0.8)
+    setMaterial(1.0, 1.0, 0.8)
 
     glBegin(GL_POLYGON)
     glVertex3f(1, 0.21, 0)
@@ -258,7 +268,8 @@ def prtCar():
     glVertex3f(1, 0.21, 1)
     glEnd()
 
-    glColor3f(1, 1, 0)
+    #glColor3f(1, 1, 0)
+    setMaterial(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
@@ -267,7 +278,8 @@ def prtCar():
     glVertex3f(0.9, 1.4, 1)
     glEnd()
 
-    glColor3f(0.6, 0.6, 0.6)
+    #glColor3f(0.6, 0.6, 0.6)
+    setMaterial(0.6, 0.6, 0.6)
 
     glPushMatrix()
 
@@ -292,7 +304,8 @@ def prtCar():
 
     glPushMatrix()
 
-    glColor3f(0.1, 0.1, 0.1)
+    #glColor3f(0.1, 0.1, 0.1)
+    setMaterial(0.1, 0.1, 0.1)
 
     glTranslatef(0.8, -0.02, 0)
     quadric = gluNewQuadric()
@@ -330,7 +343,8 @@ def prtCar():
 
     glPushMatrix()
 
-    glColor3f(0.2, 0.2, 0.2)
+    #glColor3f(0.2, 0.2, 0.2)
+    setMaterial(0.2, 0.2, 0.2)
 
     glTranslatef(-1.05, 0.1, 0.5)
     cube(0.1, 0.2, 1)
@@ -343,26 +357,31 @@ def prtCar():
 def prtStraightTrack(pillar):
     glPushMatrix()
 
-    glColor3f(0.6, 0.3, 0)
+    #glColor3f(0.6, 0.3, 0)
+    setMaterial(0.6, 0.3, 0)
 
     cube(10, 1, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    #glColor3f(0.6, 0.4, 0)
+    setMaterial(0.6, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
-    glColor3f(0.5, 0.4, 0)
+    #glColor3f(0.5, 0.4, 0)
+    setMaterial(0.5, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(0.4, 1, 10)
 
-    glColor3f(0.5, 0.5, 0)
+    #glColor3f(0.5, 0.5, 0)
+    setMaterial(0.5, 0.5, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
-    glColor3f(0.7, 0.7, 0.7)
+    #glColor3f(0.7, 0.7, 0.7)
+    setMaterial(0.7, 0.7, 0.7)
 
     glTranslatef(0.35, -0.3, -5)
     quadric = gluNewQuadric()
@@ -388,37 +407,44 @@ def prtStraightTrack(pillar):
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
 
-    glColor3f(0.4, 0.2, 0)
+    #glColor3f(0.4, 0.2, 0)
+    setMaterial(0.4, 0.2, 0)
 
     glTranslatef(5.25, -0.4, 5)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    #glColor3f(0.45, 0.4, 0)
+    setMaterial(0.45, 0.4, 0)
 
     glTranslatef(-0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    #glColor3f(0.4, 0.35, 0.05)
+    setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(-0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.4, 0.2, 0)
+    #glColor3f(0.4, 0.2, 0)
+    setMaterial(0.4, 0.2, 0)
 
     glTranslatef(-9.35, 0, 0)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    #glColor3f(0.45, 0.4, 0)
+    setMaterial(0.45, 0.4, 0)
 
     glTranslatef(0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    #glColor3f(0.4, 0.35, 0.05)
+    setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    #glColor3f(0.6, 0.4, 0)
+    setMaterial(0.6, 0.4, 0)
 
     glTranslatef(2, -0.6, 0)
     cube(3, 0.01, 10)
@@ -428,7 +454,8 @@ def prtStraightTrack(pillar):
 
     glTranslatef(2.5, 0, 0)
 
-    glColor3f(0.5, 0.5, 0.5)
+    #glColor3f(0.5, 0.5, 0.5)
+    setMaterial(0.5, 0.5, 0.5)
     if(pillar):
         glPushMatrix()
         glTranslatef(-5, -8, 0)
@@ -475,18 +502,26 @@ def prtStraightTrack(pillar):
 def prtLight():
     glPushMatrix()
 
-    glColor3f(0.8, 0.8, 0.8)
+    #glColor3f(0.8, 0.8, 0.8)
+    setMaterial(0.8, 0.8, 0.8)
 
     glRotatef(90, 1, 0, 0)
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.2, 0.2, 5, 20, 1)
 
-    glColor3f(0.6, 0.6, 0.6)
+    #glColor3f(0.6, 0.6, 0.6)
+    setMaterial(0.6, 0.6, 0.6)
 
     glTranslatef(0.5, 0, 0)
     cube(2, 1, 0.2)
 
     glPopMatrix()
+
+def setMaterial(r, g, b):
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
 
 def main():
     global rotation
@@ -523,6 +558,17 @@ def main():
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_DEPTH_TEST)
     glMatrixMode(GL_PROJECTION)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    light_ambient = [0.2, 0.2, 0.2, 1.0]
+    light_diffuse = [0.8, 0.8, 0.8, 1.0]
+    light_specular = [1.0, 1.0, 1.0, 1.0]
+    light_position = [1.0, 1.0, 1.0, 0.0]
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
     glLoadIdentity()
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
     glMatrixMode(GL_MODELVIEW)
