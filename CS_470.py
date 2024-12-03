@@ -546,17 +546,17 @@ def main():
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_DEPTH_TEST)
     glMatrixMode(GL_PROJECTION)
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    light_ambient = [0.2, 0.2, 0.2, 1.0]
-    light_diffuse = [0.8, 0.8, 0.8, 1.0]
-    light_specular = [1.0, 1.0, 1.0, 1.0]
-    light_position = [1.0, 1.0, 1.0, 0.0]
+    #glEnable(GL_LIGHTING)
+    #glEnable(GL_LIGHT0)
+    #light_ambient = [0.2, 0.2, 0.2, 1.0]
+    #light_diffuse = [0.8, 0.8, 0.8, 1.0]
+    #light_specular = [1.0, 1.0, 1.0, 1.0]
+    #light_position = [1.0, 1.0, 1.0, 0.0]
 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    #glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient)
+    #glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse)
+    #glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular)
+    #glLightfv(GL_LIGHT0, GL_POSITION, light_position)
     glLoadIdentity()
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
     glMatrixMode(GL_MODELVIEW)
