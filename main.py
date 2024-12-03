@@ -79,7 +79,7 @@ class Material:
         return Material(specular_exponent, ambient_reflection, diffused_reflection, specular_reflection, emissive_material, index_of_reflection, dissolve_index, illum)
 
 @dataclass
-class Mesh:
+class Model:
     default_material = Material(1, [1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], 1, 1, 2)
     # From obj file
     vertices : List[List[float]] # Vertex Array
@@ -123,7 +123,7 @@ class Mesh:
         normals = []
         uvs = []
         faces = []
-        material = Mesh.default_material
+        material = Model.default_material
         with open(obj_file, 'r') as mtl:
             for line in mtl:
                 line = line.strip()
@@ -157,9 +157,9 @@ class Mesh:
                 else:
                     print("Cannot parse line of obj file: " + line)
         texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
-        return Mesh(vertices, normals, uvs, faces, material, texture, -1)
+        return Model(vertices, normals, uvs, faces, material, texture, -1)
 
-def draw_model(model : Mesh):
+def draw_model(model : Model):
     model.bind_texture()
     model.material.bind()
     length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
@@ -227,9 +227,9 @@ def main():
     human = Human()
 
     # Import models
-    car_model = Mesh.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
-    human_body_model = Mesh.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
-    human_arm_model = Mesh.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
+    car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
+    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
+    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
     car_dl = glGenLists(1); glNewList(car_dl, GL_COMPILE); draw_model(car_model); glEndList()
     human_body_dl = glGenLists(1); glNewList(human_body_dl, GL_COMPILE); draw_model(human_body_model); glEndList()
     human_arm_dl = glGenLists(1); glNewList(human_arm_dl, GL_COMPILE); draw_model(human_arm_model); glEndList()
