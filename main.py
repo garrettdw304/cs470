@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Sequence
 
+import PIL.ImageOps
 import pygame
 from OpenGL.raw.GLU import gluLookAt, gluPerspective
 from pygame.locals import *
@@ -99,6 +100,21 @@ class Mesh:
         if self.texture_id == -1: raise Exception("Texture cannot be bound if it is not loaded into GPU...")
         glBindTexture(GL_TEXTURE_2D, 0)
 
+    def save(self, file_name):
+        with open(file_name, 'w') as file:
+            file.write("o Model\ns 0\n")
+            for vertex in self.vertices:
+                file.write(f"v {vertex[0]} {vertex[1]} {vertex[2]}\n")
+            for vertex in self.normals:
+                file.write(f"vn {vertex[0]} {vertex[1]} {vertex[2]}\n")
+            for vertex in self.uvs:
+                file.write(f"vt {vertex[0]} {vertex[1]}\n")
+            for face in self.faces:
+                file.write("f ")
+                for indices in face:
+                    file.write(f"{indices[0] + 1}/{indices[1] + 1}/{indices[2] + 1} ")
+                file.write("\n")
+
     @staticmethod
     def load(obj_file, texture_file):
         vertices = []
@@ -115,7 +131,7 @@ class Mesh:
                     continue
                 if line.startswith("o"): # Expects only one object
                     continue
-                if line.startswith("s"): # Dont even know what this is
+                if line.startswith("s"): # Smooth shading
                     continue
                 if line.startswith("usemtl"): # Expects only one material
                     continue
@@ -138,7 +154,7 @@ class Mesh:
                     faces.append(face)
                 else:
                     print("Cannot parse line of obj file: " + line)
-        texture = Image.open(texture_file).convert("RGB").tobytes()
+        texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Mesh(vertices, normals, uvs, faces, material, texture, -1)
 
 def draw_model(model : Mesh):
@@ -200,6 +216,7 @@ def main():
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_TEXTURE_2D) # Enable texture mapping
+    glEnable(GL_DEPTH_TEST)
 
     # Enable Lighting
     # glEnable(GL_LIGHTING)
@@ -237,7 +254,7 @@ def main():
                     cars.append(Car(time, [-15, 0, 0], [15, 0, 0])) # TODO: Set start and dest
 
         # Render
-        glClear(GL_COLOR_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(45, 1, 0.1, 100) # fov, aspect ratio (width/height), near, far
@@ -252,7 +269,7 @@ def main():
             pos = lerp(t, car.pos, car.dest)
             draw_at(lambda: draw_model(car_model), *pos)
         glRotate(rot, 0, 1, 0)
-        draw_at(lambda: draw_human(human, human_body_model, human_arm_model), 0, 0, 0) # TODO: Set human position
+        draw_at(lambda: draw_model(human_body_model), 0, 0, 0) # TODO: Set human position
         draw_model(car_model)
         pygame.display.flip()
 
