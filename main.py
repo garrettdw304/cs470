@@ -525,9 +525,11 @@ def draw_prt():
         glPushMatrix()
         glScale(1.2, 1.2, 1.2)
         glRotatef(90, 0, 1, 0)
-        glTranslatef(-20, 10, 10)
+        glTranslatef(-40, 10, -10)
         prtStraightTrack(True)
-        glTranslatef(0, 0, -10)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
         prtStraightTrack(False)
 
         glPushMatrix()
@@ -1063,6 +1065,12 @@ def apply_camera():
     glTranslatef(*camera_pos)
     glRotatef(camera_rotation[0], 1, 0, 0)
     glRotatef(camera_rotation[1], 0, 1, 0)
+
+def setMaterial(r, g, b):
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
 
 def main():
     pygame.init()
