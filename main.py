@@ -7,6 +7,87 @@ from OpenGL.GLU import *
 
 global time  # Time since the beginning of the program
 
+def draw_cylinder(radius, segments, height, offset=0):
+    # Draw the bottom face
+    glBegin(GL_TRIANGLE_FAN)
+    glColor3f(0.96, 0.87, 0.70)  # Beige color
+    glVertex3f(0, offset, 0)  # Center of the bottom face
+    for i in range(segments + 1):
+        angle = 2 * math.pi * i / segments
+        x = radius * math.cos(angle)
+        z = radius * math.sin(angle)
+        glVertex3f(x, offset, z)
+    glEnd()
+
+    # Draw the top face
+    glBegin(GL_TRIANGLE_FAN)
+    glColor3f(0.96, 0.87, 0.70)  # Beige color
+    glVertex3f(0, offset + height, 0)  # Center of the top face
+    for i in range(segments + 1):
+        angle = 2 * math.pi * i / segments
+        x = radius * math.cos(angle)
+        z = radius * math.sin(angle)
+        glVertex3f(x, offset + height, z)
+    glEnd()
+
+    # Draw the sidewalls
+    glBegin(GL_QUAD_STRIP)
+    glColor3f(0.96, 0.87, 0.70)  # Beige color
+    for i in range(segments + 1):
+        angle = 2 * math.pi * i / segments
+        x = radius * math.cos(angle)
+        z = radius * math.sin(angle)
+        glVertex3f(x, offset, z)  # Bottom vertex
+        glVertex3f(x, offset + height, z)  # Top vertex
+    glEnd()
+
+# Function to draw walls for the coliseum (upright)
+def draw_coliseum_walls(radius, segments, height, protrusion=1):
+    wall_radius = radius + protrusion  # Increase radius for protrusion
+
+    for i in range(segments):
+        angle1 = 2 * math.pi * i / segments
+        angle2 = 2 * math.pi * (i + 1) / segments
+        x1, z1 = wall_radius * math.cos(angle1), wall_radius * math.sin(angle1)
+        x2, z2 = wall_radius * math.cos(angle2), wall_radius * math.sin(angle2)
+
+        # Leave gaps for arches or windows
+        if i % 4 == 0:  # Adjust this value to control the number of gaps
+            continue
+
+        glBegin(GL_QUADS)
+        glColor3f(0.98, 0.92, 0.78)  # Slightly lighter beige
+        glVertex3f(x1, 0, z1)           # Bottom-left corner
+        glVertex3f(x2, 0, z2)           # Bottom-right corner
+        glVertex3f(x2, height, z2)      # Top-right corner
+        glVertex3f(x1, height, z1)      # Top-left corner
+        glEnd()
+
+def draw_dome(radius, segments, rings, offset, height_scale=0.5):
+
+    glColor3f(0.5, 0.5, 0.5)  # Gray color for the dome
+
+    for i in range(rings):
+        theta1 = math.pi * i / (2 * rings)  # Latitude angle (bottom to top)
+        theta2 = math.pi * (i + 1) / (2 * rings)
+
+        glBegin(GL_TRIANGLE_STRIP)
+        for j in range(segments + 1):
+            phi = 2 * math.pi * j / segments  # Longitude angle (around)
+
+            # First vertex of the strip
+            x1 = radius * math.sin(theta1) * math.cos(phi)
+            y1 = radius * math.cos(theta1) * height_scale  # Scaled height
+            z1 = radius * math.sin(theta1) * math.sin(phi)
+            glVertex3f(x1, y1 + offset, z1)
+
+            # Second vertex of the strip
+            x2 = radius * math.sin(theta2) * math.cos(phi)
+            y2 = radius * math.cos(theta2) * height_scale  # Scaled height
+            z2 = radius * math.sin(theta2) * math.sin(phi)
+            glVertex3f(x2, y2 + offset, z2)
+        glEnd()
+
 def init_opengl():
     """Initializes OpenGL settings and projection matrix."""
     glEnable(GL_DEPTH_TEST)  # Enable depth testing for 3D rendering
@@ -376,6 +457,7 @@ def main():
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
+    coliseum_position = [75, 0, 75]  # [x, y, z] coordinates for the coliseum
 
     while True:
         for event in pygame.event.get():
@@ -393,6 +475,13 @@ def main():
         draw_road()
         draw_water()
         draw_background()
+
+        
+        glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
+        # Draw the coliseum components
+        draw_cylinder(30, 50, 25, offset=0)
+        draw_coliseum_walls(30, 50, 25)
+        draw_dome(30, 50, 20, offset=25)
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
