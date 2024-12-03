@@ -89,13 +89,14 @@ class Model:
     # From mtl file
     material : Material
     # From .png or similar file
-    texture : Sequence[int]
+    texture : Sequence[int] or None
     texture_id : int # The texture index of where the texture is stored at on the gpu. If not yet passed to gpu, -1.
 
     # Sends the texture to the GPU and stores the texture id into texture_id. Throws if texture_id is not -1.
     # When leaving this method, the currently bound texture is this texture
     def send_texture(self):
         if self.texture_id != -1: raise Exception("Texture is already in GPU.")
+        if self.texture is None: raise Exception("Cannot send a texture if there is not one to send.")
         self.texture_id = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -118,7 +119,7 @@ class Model:
         glBindTexture(GL_TEXTURE_2D, 0)
 
     @staticmethod
-    def load(obj_file, texture_file):
+    def load(obj_file, texture_file = None):
         vertices = []
         normals = []
         uvs = []
@@ -156,11 +157,14 @@ class Model:
                     faces.append(face)
                 else:
                     print("Cannot parse line of obj file: " + line)
-        texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
+        texture = None
+        if texture_file is not None:
+            texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Model(vertices, normals, uvs, faces, material, texture, -1)
 
 def draw_model(model : Model):
-    model.bind_texture()
+    if model.texture is not None:
+        model.bind_texture()
     model.material.bind()
     length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
     for face in model.faces:
@@ -182,11 +186,13 @@ def draw_model(model : Model):
 
         for indices in face:  # Each 'indices' contains 3 vertex indices: 0 -> mesh vertex index, 1 -> texture vertex index, 2 -> normal vertex index
             glNormal3fv(model.normals[indices[2]])
-            glTexCoord2fv(model.uvs[indices[1]])
+            if model.texture is not None:
+                glTexCoord2fv(model.uvs[indices[1]])
             glVertex3fv(model.vertices[indices[0]])
     if length != -1:
         glEnd()
-    model.unbind_texture()
+    if model.texture is not None:
+        model.unbind_texture()
 
 class Car:
     time_to_finished = 5000
@@ -220,6 +226,12 @@ def main():
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     glEnable(GL_TEXTURE_2D) # Enable texture mapping
     glEnable(GL_DEPTH_TEST)
+    glClearColor(0, 0, 0, 1)
+
+    # Enable lighting
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glLight(GL_LIGHT0, GL_POSITION, [1.0, 1.0, 1.0, 0])
 
     # Array to store driving cars
     cars = []
