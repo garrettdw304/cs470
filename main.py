@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Sequence
 
-import PIL.ImageOps
 import pygame
 from OpenGL.raw.GLU import gluLookAt, gluPerspective
 from pygame.locals import *
@@ -15,9 +14,6 @@ def draw_at(draw_func, posx, posy, posz):
     glTranslate(posx, posy, posz)
     draw_func()
     glPopMatrix()
-
-def draw_human(human, human_body_model, human_arm_model):
-    pass
 
 @dataclass
 class Material:
@@ -99,21 +95,6 @@ class Mesh:
     def unbind_texture(self):
         if self.texture_id == -1: raise Exception("Texture cannot be bound if it is not loaded into GPU...")
         glBindTexture(GL_TEXTURE_2D, 0)
-
-    def save(self, file_name):
-        with open(file_name, 'w') as file:
-            file.write("o Model\ns 0\n")
-            for vertex in self.vertices:
-                file.write(f"v {vertex[0]} {vertex[1]} {vertex[2]}\n")
-            for vertex in self.normals:
-                file.write(f"vn {vertex[0]} {vertex[1]} {vertex[2]}\n")
-            for vertex in self.uvs:
-                file.write(f"vt {vertex[0]} {vertex[1]}\n")
-            for face in self.faces:
-                file.write("f ")
-                for indices in face:
-                    file.write(f"{indices[0] + 1}/{indices[1] + 1}/{indices[2] + 1} ")
-                file.write("\n")
 
     @staticmethod
     def load(obj_file, texture_file):
@@ -218,15 +199,6 @@ def main():
     glEnable(GL_TEXTURE_2D) # Enable texture mapping
     glEnable(GL_DEPTH_TEST)
 
-    # Enable Lighting
-    # glEnable(GL_LIGHTING)
-    # glEnable(GL_LIGHT0)
-    # glLightfv(GL_LIGHT0, GL_POSITION, [1, 1, 1, 0])
-    # glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1])
-    # glLightfv(GL_LIGHT0, GL_SPECULAR, [1, 1, 1])
-    # glEnable(GL_COLOR_MATERIAL)
-    # glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
-
     # Array to store driving cars
     cars = []
     # Store human state
@@ -266,6 +238,7 @@ def main():
             t = (time - car.start_time) / car.time_to_finished
             if t >= car.time_to_finished:
                 cars.remove(car)
+                continue
             pos = lerp(t, car.pos, car.dest)
             draw_at(lambda: draw_model(car_model), *pos)
         glRotate(rot, 0, 1, 0)
