@@ -16,18 +16,18 @@ def draw_at(draw_func, posx, posy, posz):
     draw_func()
     glPopMatrix()
 
-def draw_human(human, human_body_model, human_arm_model):
+def draw_human(human, human_body_dl, human_arm_dl):
     global time
     if human.is_waving:
         glPushMatrix()
         glTranslate(-0.24308, 1.3941, 0)
         wave_speed = 2
         glRotate(math.fabs(math.sin((time - human.started_waving) / 1000 * wave_speed)) * -180, 0, 0, 1)
-        draw_model(human_arm_model)
+        glCallList(human_arm_dl)
         glPopMatrix()
     else:
-        draw_at(lambda: draw_model(human_arm_model), -0.24308, 1.3941, 0)
-    draw_model(human_body_model)
+        draw_at(lambda: glCallList(human_arm_dl), -0.24308, 1.3941, 0)
+    glCallList(human_body_dl)
 
 @dataclass
 class Material:
@@ -222,6 +222,9 @@ def main():
     car_model = Mesh.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
     human_body_model = Mesh.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
     human_arm_model = Mesh.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
+    car_dl = glGenLists(1); glNewList(car_dl, GL_COMPILE); draw_model(car_model); glEndList()
+    human_body_dl = glGenLists(1); glNewList(human_body_dl, GL_COMPILE); draw_model(human_body_model); glEndList()
+    human_arm_dl = glGenLists(1); glNewList(human_arm_dl, GL_COMPILE); draw_model(human_arm_model); glEndList()
 
     while True:
 
@@ -256,10 +259,10 @@ def main():
                 cars.remove(car)
                 continue
             pos = lerp(t, car.pos, car.dest)
-            draw_at(lambda: draw_model(car_model), *pos)
+            draw_at(lambda: glCallList(car_dl), *pos)
         glRotate(rot, 0, 1, 0)
-        draw_at(lambda: draw_human(human, human_body_model, human_arm_model), 0, 0, 0) # TODO: Set human position
-        draw_at(lambda: draw_model(car_model), 0, 2, 0) # This can be removed, it is simply demoing the car model. We can add cars to the scene by adding them to the cars array.
+        draw_at(lambda: draw_human(human, human_body_dl, human_arm_dl), 0, 0, 0) # TODO: Set human position
+        draw_at(lambda: glCallList(car_dl), 0, 2, 0) # This can be removed, it is simply demoing the car model. We can add cars to the scene by adding them to the cars array.
         pygame.display.flip()
 
         # Wait for next frame
