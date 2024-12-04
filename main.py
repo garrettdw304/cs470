@@ -11,6 +11,29 @@ from PIL import Image
 
 global timeVar  # Time since the beginning of the program
 
+def load_texture(image_path):
+    """Loads a texture from an image file and returns the texture ID."""
+    # Generate a texture ID
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+
+    # Load the image using PIL
+    image = Image.open(image_path)
+    image = image.transpose(Image.FLIP_TOP_BOTTOM)  # Flip the image vertically
+    img_data = image.convert("RGB").tobytes()
+
+    # Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)  # Repeat texture horizontally
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)  # Repeat texture vertically
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)  # Linear filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+    # Upload the texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height,
+                 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
+
+    return texture_id
+
 def draw_at(draw_func, posx, posy, posz):
     glPushMatrix()
     glTranslate(posx, posy, posz)
@@ -957,21 +980,37 @@ def draw_dome(radius, segments, rings, offset, height_scale=0.5):
 def init_opengl():
     """Initializes OpenGL settings and projection matrix."""
     glEnable(GL_DEPTH_TEST)  # Enable depth testing for 3D rendering
+    glEnable(GL_LIGHTING)    # Enable lighting
+    glEnable(GL_LIGHT0)      # Enable a default light source
+    glEnable(GL_COLOR_MATERIAL)  # Enable color material tracking
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+
+    glEnable(GL_NORMALIZE)  # Normalize normals for consistent lighting
     glMatrixMode(GL_PROJECTION)
     gluPerspective(45, 800 / 600, 0.1, 1000)  # Set up perspective projection
     glMatrixMode(GL_MODELVIEW)
-    glClearColor(0.50, 0.80, 0.90, 1.0)  # Set void color to sky blue
+    glTranslatef(0, -1, -20)  # Move scene slightly for better initial view
+    glClearColor(0.53, 0.81, 0.92, 1.0)  # Set background color to light blue
+
+
 
 def draw_ground():
-    """Draws a grassy ground plane as a solid color."""
-    glColor3f(0.15, 0.55, 0.15)  # Grass green color
+    """Draws the ground plane with a texture."""
+    glDisable(GL_LIGHTING)  # Disable lighting for the ground
+    glEnable(GL_TEXTURE_2D)  # Enable texture mapping
+    glBindTexture(GL_TEXTURE_2D, ground_texture_id)
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white to display texture colors accurately
+
     glBegin(GL_QUADS)
-    # Define vertices for the ground quad
-    glVertex3f(-150, -2, 150)
-    glVertex3f(150, -2, 150)
-    glVertex3f(150, -2, -150)
-    glVertex3f(-150, -2, -150)
+    # Repeat the texture 10 times across the ground
+    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -2, 150)
+    glTexCoord2f(10.0, 0.0); glVertex3f(150, -2, 150)
+    glTexCoord2f(10.0, 10.0); glVertex3f(150, -2, -150)
+    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -2, -150)
     glEnd()
+
+    glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
+    glEnable(GL_LIGHTING)     # Re-enable lighting if it was disabled
 
 def draw_dotted_line_straight():
     """Draws a dotted yellow line down the straight road."""
@@ -1323,6 +1362,10 @@ def main():
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
+
+    global ground_texture_id
+    ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
+
     coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
     #prt position variables
@@ -1383,6 +1426,8 @@ def main():
         camera_controls()  # Update camera based on user input
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear screen and depth buffer
         apply_camera()  # Apply camera transformations
+
+        glLightfv(GL_LIGHT0, GL_POSITION, [1.0, 100.0, 1.0, 1.0])
 
         # Draw scene
         draw_tunnel()
