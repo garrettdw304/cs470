@@ -11,6 +11,76 @@ from PIL import Image
 
 global timeVar  # Time since the beginning of the program
 
+# Global variables for day/night cycle
+is_day = True           # Indicates whether it's currently day
+transition_in_progress = False  # Indicates if a transition is happening
+transition_start_time = 0       # Time when the transition started
+transition_duration = 5000      # Duration of the transition in milliseconds (5 seconds)
+
+# Light position variables
+day_light_position = [0.0, 100.0, 0.0, 1.0]   # High in the sky
+night_light_position = [0.0, -200.0, 0.0, 1.0]  # Below the scene
+current_light_position = day_light_position.copy()
+
+# Background color
+background_color = [0.53, 0.81, 0.92, 1.0]  # Initial sky color (day)
+
+def lerp(start, end, t):
+    """Linear interpolation between start and end by t."""
+    return start + t * (end - start)
+
+def update_day_night_cycle():
+    """Updates the light position and sky color during the day/night transition."""
+    global transition_in_progress, transition_start_time, current_light_position, background_color
+
+    if transition_in_progress:
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - transition_start_time
+        t = min(elapsed / transition_duration, 1.0)  # Normalized time [0.0, 1.0]
+
+        if is_day:
+            # Transitioning from night to day
+            current_light_position = [
+                lerp(night_light_position[i], day_light_position[i], t)
+                for i in range(4)
+            ]
+            background_color = [
+                lerp(0.05, 0.53, t),  # Red component
+                lerp(0.05, 0.81, t),  # Green component
+                lerp(0.15, 0.92, t),  # Blue component
+                1.0                    # Alpha
+            ]
+        else:
+            # Transitioning from day to night
+            current_light_position = [
+                lerp(day_light_position[i], night_light_position[i], t)
+                for i in range(4)
+            ]
+            background_color = [
+                lerp(0.53, 0.05, t),  # Red component
+                lerp(0.81, 0.05, t),  # Green component
+                lerp(0.92, 0.15, t),  # Blue component
+                1.0                    # Alpha
+            ]
+
+        # Update the background color
+        glClearColor(*background_color)
+
+        if t >= 1.0:
+            # Transition complete
+            transition_in_progress = False
+    else:
+        # No transition in progress; ensure light and background are set correctly
+        if is_day:
+            current_light_position = day_light_position.copy()
+            background_color = [0.53, 0.81, 0.92, 1.0]  # Sky blue
+        else:
+            current_light_position = night_light_position.copy()
+            background_color = [0.05, 0.05, 0.15, 1.0]  # Dark blue
+
+        glClearColor(*background_color)
+        
+
 def load_texture(image_path):
     """Loads a texture from an image file and returns the texture ID."""
     # Generate a texture ID
@@ -1360,7 +1430,7 @@ def main():
 
     coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
-    #prt position variables
+    # PRT position variables
     previousTime = time.time()
     delta = 0
     global position
@@ -1373,22 +1443,21 @@ def main():
     position2 = 3
     speed2 = 0
 
+    global is_day, transition_in_progress, transition_start_time, current_light_position
+    global background_color
+
     while True:
-        #prt position
+        # PRT position updates
         delta = time.time() - previousTime
         previousTime = time.time()
-        speed += acceleration*delta
-        if speed > maxSpeed:
-            speed = maxSpeed
-        if speed < minSpeed:
-            speed = minSpeed
-        position += speed*delta
-        speed2 += acceleration*delta
-        if speed2 > maxSpeed:
-            speed2 = maxSpeed
-        if speed2 < minSpeed:
-            speed2 = minSpeed
-        position2 += speed2*delta
+        speed += acceleration * delta
+        speed = max(min(speed, maxSpeed), minSpeed)  # Clamp speed between minSpeed and maxSpeed
+        position += speed * delta
+
+        speed2 += acceleration * delta
+        speed2 = max(min(speed2, maxSpeed), minSpeed)
+        position2 += speed2 * delta
+
         if position > 112:
             position = 0
             speed = 0
@@ -1402,13 +1471,23 @@ def main():
                 quit()
             elif event.type == KEYDOWN:
                 if event.key == K_p:
-                    acceleration = -acceleration #stop prt cars
+                    acceleration = -acceleration  # Stop PRT cars
+                elif event.key == K_n:
+                    if not transition_in_progress:
+                        transition_in_progress = True
+                        transition_start_time = pygame.time.get_ticks()
+                        is_day = not is_day  # Toggle between day and night
 
         camera_controls()  # Update camera based on user input
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear screen and depth buffer
+
+        # Set the light position
+        glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
+
         apply_camera()  # Apply camera transformations
 
-        glLightfv(GL_LIGHT0, GL_POSITION, [1.0, 100.0, 1.0, 1.0])
+        # Update the day/night transition
+        update_day_night_cycle()
 
         # Draw scene
         draw_tunnel()
@@ -1417,12 +1496,14 @@ def main():
         draw_water()
         draw_background()
         draw_prt()
-        
+
+        glPushMatrix()
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
         # Draw the coliseum components
         draw_cylinder(30, 50, 25, offset=0)
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
+        glPopMatrix()
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
