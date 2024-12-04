@@ -289,7 +289,6 @@ def prtCar():
     glTranslatef(0, 0, 0.5)
 
     glColor3f(1.0, 1.0, 0)
-    #setMaterial(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -299,7 +298,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0, 0, 1.0)
-    #setMaterial(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
@@ -346,7 +344,6 @@ def prtCar():
     glTranslatef(0, 0, -1)
 
     glColor3f(1.0, 1.0, 0)
-    #setMaterial(1.0, 1.0, 0)
     
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -356,7 +353,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0, 0, 1.0)
-    #setMaterial(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
@@ -401,7 +397,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0)
-    #setMaterial(1, 1, 0)
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.91, 1.3, 0)
@@ -459,7 +454,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0.3, 0.3, 0.3)
-    #setMaterial(0.3, 0.3, 0.3)
 
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -497,7 +491,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0.8)
-    #setMaterial(1.0, 1.0, 0.8)
 
     glBegin(GL_POLYGON)
     glVertex3f(1, 0.21, 0)
@@ -507,7 +500,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0)
-    #setMaterial(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
@@ -517,7 +509,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0.6, 0.6, 0.6)
-    #setMaterial(0.6, 0.6, 0.6)
 
     glPushMatrix()
 
@@ -543,7 +534,6 @@ def prtCar():
     glPushMatrix()
 
     glColor3f(0.1, 0.1, 0.1)
-    #setMaterial(0.1, 0.1, 0.1)
 
     glTranslatef(0.8, -0.02, 0)
     quadric = gluNewQuadric()
@@ -582,7 +572,6 @@ def prtCar():
     glPushMatrix()
 
     glColor3f(0.2, 0.2, 0.2)
-    #setMaterial(0.2, 0.2, 0.2)
 
     glTranslatef(-1.05, 0.1, 0.5)
     cube(0.1, 0.2, 1)
@@ -596,30 +585,25 @@ def prtStraightTrack(pillar):
     glPushMatrix()
 
     glColor3f(0.6, 0.3, 0)
-    #setMaterial(0.6, 0.3, 0)
 
     cube(10, 1, 10)
 
     glColor3f(0.6, 0.4, 0)
-    #setMaterial(0.6, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
     glColor3f(0.5, 0.4, 0)
-    #setMaterial(0.5, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(0.4, 1, 10)
 
     glColor3f(0.5, 0.5, 0)
-    #setMaterial(0.5, 0.5, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
     glColor3f(0.7, 0.7, 0.7)
-    #setMaterial(0.7, 0.7, 0.7)
 
     glTranslatef(0.35, -0.3, -5)
     quadric = gluNewQuadric()
@@ -646,43 +630,36 @@ def prtStraightTrack(pillar):
     gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
 
     glColor3f(0.4, 0.2, 0)
-    #setMaterial(0.4, 0.2, 0)
 
     glTranslatef(5.25, -0.4, 5)
     cube(0.2, 1.2, 10)
 
     glColor3f(0.45, 0.4, 0)
-    #setMaterial(0.45, 0.4, 0)
 
     glTranslatef(-0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
     glColor3f(0.4, 0.35, 0.05)
-    #setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(-0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
     glColor3f(0.4, 0.2, 0)
-    #setMaterial(0.4, 0.2, 0)
 
     glTranslatef(-9.35, 0, 0)
     cube(0.2, 1.2, 10)
 
     glColor3f(0.45, 0.4, 0)
-    #setMaterial(0.45, 0.4, 0)
 
     glTranslatef(0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
     glColor3f(0.4, 0.35, 0.05)
-    #setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
     glColor3f(0.6, 0.4, 0)
-    #setMaterial(0.6, 0.4, 0)
 
     glTranslatef(2, -0.6, 0)
     cube(3, 0.01, 10)
@@ -693,7 +670,6 @@ def prtStraightTrack(pillar):
     glTranslatef(2.5, 0, 0)
 
     glColor3f(0.5, 0.5, 0.5)
-    #setMaterial(0.5, 0.5, 0.5)
     if(pillar):
         glPushMatrix()
         glTranslatef(-5, -8, 0)
@@ -741,14 +717,12 @@ def prtLight():
     glPushMatrix()
 
     glColor3f(0.8, 0.8, 0.8)
-    #setMaterial(0.8, 0.8, 0.8)
 
     glRotatef(90, 1, 0, 0)
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.2, 0.2, 5, 20, 1)
 
     glColor3f(0.6, 0.6, 0.6)
-    #setMaterial(0.6, 0.6, 0.6)
 
     glTranslatef(0.5, 0, 0)
     cube(2, 1, 0.2)
@@ -867,22 +841,6 @@ def draw_prt():
             glTranslatef(position-67.5-round(turns)*0.306, 0, -0.016*(position-67.5-round(turns)*0.306))
         
         glTranslatef(max(0, min(position-78.5, 34.5)), 0, 0)
-
-        '''turns = max(0, min((position - 40)/0.153, 36))
-        for i in range(round(turns)):
-            glRotatef(-2.5, 0, 1, 0)
-            glTranslatef(0.153, 0, -0.01)
-        if position > 40 and position < 45.5:
-            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
-        
-        '''turns = max(0, min((position - 21)/0.306, 36))
-        for i in range(round(turns)):
-            glRotatef(2.5, 0, 1, 0)
-            glTranslatef(0.306, 0, -0.005)
-        if position > 21 and position < 32:
-            glTranslatef(position-21-round(turns)*0.306, 0, -0.016*(position-21-round(turns)*0.306))
-        
-        glTranslatef(max(0, min(position-32, 4)), 0, 0)'''
  
         prtCar()
         glPopMatrix()
