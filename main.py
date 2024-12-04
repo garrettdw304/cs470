@@ -282,6 +282,7 @@ def prtCar():
     glColor3f(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-0.5, 0, 0)
     glVertex3f(-0.7, 0.2, 0)
     glVertex3f(0.7, 0.2, 0)
@@ -291,6 +292,7 @@ def prtCar():
     glColor3f(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-1, 0.2, 0)
     glVertex3f(-0.95, 0.8, 0)
     glVertex3f(0.95, 0.8, 0)
@@ -298,6 +300,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-0.95, 0.8, 0)
     glVertex3f(-0.9, 1.4, 0)
     glVertex3f(-0.85, 1.4, 0)
@@ -305,6 +308,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(0.95, 0.8, 0)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.85, 1.4, 0)
@@ -312,6 +316,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-0.85, 1.4, 0)
     glVertex3f(-0.855, 1.35, 0)
     glVertex3f(0.855, 1.35, 0)
@@ -319,6 +324,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-0.4, 1.4, 0)
     glVertex3f(-0.5, 1.4, 0)
     glVertex3f(-0.5, 0.8, 0)
@@ -326,6 +332,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(0, 1.4, 0)
     glVertex3f(0.5, 1.4, 0)
     glVertex3f(0.5, 0.8, 0)
@@ -337,6 +344,7 @@ def prtCar():
     glColor3f(1.0, 1.0, 0)
     
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-0.5, 0, 0)
     glVertex3f(-0.7, 0.2, 0)
     glVertex3f(0.7, 0.2, 0)
@@ -346,6 +354,7 @@ def prtCar():
     glColor3f(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-1, 0.2, 0)
     glVertex3f(-0.95, 0.8, 0)
     glVertex3f(0.95, 0.8, 0)
@@ -353,6 +362,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-0.95, 0.8, 0)
     glVertex3f(-0.9, 1.4, 0)
     glVertex3f(-0.85, 1.4, 0)
@@ -360,6 +370,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(0.95, 0.8, 0)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.85, 1.4, 0)
@@ -367,6 +378,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-0.85, 1.4, 0)
     glVertex3f(-0.855, 1.35, 0)
     glVertex3f(0.855, 1.35, 0)
@@ -374,6 +386,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-0.4, 1.4, 0)
     glVertex3f(-0.5, 1.4, 0)
     glVertex3f(-0.5, 0.8, 0)
@@ -381,6 +394,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(0, 1.4, 0)
     glVertex3f(0.5, 1.4, 0)
     glVertex3f(0.5, 0.8, 0)
@@ -389,6 +403,7 @@ def prtCar():
 
     glColor3f(1, 1, 0)
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.91, 1.3, 0)
     glVertex3f(0.91, 1.3, 1)
@@ -396,6 +411,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(0.91, 1.3, 0)
     glVertex3f(0.96, 0.7, 0)
     glVertex3f(0.96, 0.7, 0.05)
@@ -403,6 +419,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(0.91, 1.3, 1)
     glVertex3f(0.96, 0.7, 1)
     glVertex3f(0.96, 0.7, 0.95)
@@ -410,13 +427,15 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(0.96, 0.7, 0)
     glVertex3f(1, 0.2, 0)
     glVertex3f(1, 0.2, 1)
     glVertex3f(0.96, 0.7, 1)
     glEnd()
-
+    
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(-0.9, 1.4, 0)
     glVertex3f(-0.91, 1.3, 0)
     glVertex3f(-0.91, 1.3, 1)
@@ -424,6 +443,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(-1, 0, 0)
     glVertex3f(-0.91, 1.3, 0)
     glVertex3f(-0.96, 0.7, 0)
     glVertex3f(-0.96, 0.7, 0.05)
@@ -431,6 +451,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(-1, 0, 0)
     glVertex3f(-0.91, 1.3, 1)
     glVertex3f(-0.96, 0.7, 1)
     glVertex3f(-0.96, 0.7, 0.95)
@@ -438,6 +459,7 @@ def prtCar():
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(-1, 0, 0)
     glVertex3f(-0.96, 0.7, 0)
     glVertex3f(-1, 0.2, 0)
     glVertex3f(-1, 0.2, 1)
@@ -484,6 +506,7 @@ def prtCar():
     glColor3f(1, 1, 0.8)
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 1, 0)
     glVertex3f(1, 0.21, 0)
     glVertex3f(-1, 0.21, 0)
     glVertex3f(-1, 0.21, 1)
@@ -493,6 +516,7 @@ def prtCar():
     glColor3f(1, 1, 0)
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 1, 0)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(-0.9, 1.4, 0)
     glVertex3f(-0.9, 1.4, 1)
@@ -1525,14 +1549,9 @@ def draw_pyramid(base_size, height, position, color):
     glEnd()
 
 class Car:
-    time_to_finished = 5000
-    start_time = 0
     pos = [0, 0, 0]
-    dest = [0, 0, 0]
-    def __init__(self, start_time, start_position, destination):
+    def __init__(self, start_position):
         self.pos = start_position
-        self.dest = destination
-        self.start_time = start_time
 
 class Human:
     started_waving = 0
@@ -1743,7 +1762,10 @@ def main():
     car_model.unbind_texture()
     car_dl = glGenLists(1)
     glNewList(car_dl, GL_COMPILE)
+    glPushMatrix()
+    glRotate(-90, 0, 1, 0)
     draw_model(car_model)
+    glPopMatrix()
     glEndList()
     human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png")
     human_body_model.send_texture(1024)
@@ -1763,6 +1785,13 @@ def main():
     draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
     draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
     draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
+    glPushMatrix()
+    glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
+    # Draw the coliseum components
+    draw_cylinder(30, 50, 25, offset=0)
+    draw_coliseum_walls(30, 50, 25)
+    draw_dome(30, 50, 20, offset=25)
+    glPopMatrix()
     glEndList()
 
     while True:
@@ -1806,7 +1835,7 @@ def main():
                         transition_start_time = pygame.time.get_ticks()
                         is_day = not is_day  # Toggle between day and night
                 elif event.key == K_k:
-                    cars.append(Car(timeVar, [0, 0, 0], [15, 15, 15]))
+                    cars.append(Car([0, 0, -50]))
 
         camera_controls()  # Update camera based on user input
 
@@ -1825,20 +1854,11 @@ def main():
         glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
         for car in cars:
-            t = (timeVar - car.start_time) / car.time_to_finished
-            if t >= car.time_to_finished:
+            car.pos = [car.pos[0], car.pos[1], car.pos[2] + delta * 10]
+            if car.pos[2] > 150:
                 cars.remove(car)
                 continue
-            pos = lerpg(t, car.pos, car.dest)
-            draw_at(lambda: glCallList(car_dl), *pos)
-
-        glPushMatrix()
-        glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
-        # Draw the coliseum components
-        draw_cylinder(30, 50, 25, offset=0)
-        draw_coliseum_walls(30, 50, 25)
-        draw_dome(30, 50, 20, offset=25)
-        glPopMatrix()
+            draw_at(lambda: glCallList(car_dl), *car.pos)
 
         pygame.display.flip()  # Swap buffers0
         pygame.time.wait(10)  # Small delay to control camera speed
