@@ -599,21 +599,21 @@ def prtCar():
 def prtStraightTrack(pillar):
     glPushMatrix()
 
-    glColor3f(0.6, 0.3, 0)
+    glColor3f(0.6, 0.5, 0.3)
 
     cube(10, 1, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
-    glColor3f(0.5, 0.4, 0)
+    glColor3f(0.3, 0.3, 0.3)
 
     glTranslatef(0, 0.6, 0)
     cube(0.4, 1, 10)
 
-    glColor3f(0.5, 0.5, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
@@ -644,47 +644,50 @@ def prtStraightTrack(pillar):
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
 
-    glColor3f(0.4, 0.2, 0)
+    glColor3f(0.6, 0.55, 0.5)
 
     glTranslatef(5.25, -0.4, 5)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(-0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    glColor3f(0.35, 0.25, 0.05)
 
     glTranslatef(-0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.4, 0.2, 0)
+    glColor3f(0.6, 0.55, 0.5)
 
     glTranslatef(-9.35, 0, 0)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    glColor3f(0.35, 0.25, 0.05)
 
     glTranslatef(0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    glColor3f(0.5, 0.4, 0.2)
 
-    glTranslatef(2, -0.6, 0)
+    glTranslatef(2, -0.5, 0)
     cube(3, 0.01, 10)
 
     glTranslatef(5, 0, 0)
     cube(3, 0.01, 10)
 
+    glTranslatef(0, -0.1, 0)
+
     glTranslatef(2.5, 0, 0)
 
     glColor3f(0.5, 0.5, 0.5)
+
     if(pillar):
         glPushMatrix()
         glTranslatef(-5, -8, 0)
@@ -739,8 +742,8 @@ def prtLight():
 
     glColor3f(0.6, 0.6, 0.6)
 
-    glTranslatef(0.5, 0, 0)
-    cube(2, 1, 0.2)
+    glTranslatef(0, 0, 0)
+    cube(2.5, 1, 0.2)
 
     glPopMatrix()
 
@@ -755,7 +758,6 @@ def draw_prt():
 
         glPushMatrix()
         glTranslatef(0, 7, -5)
-        prtLight()
         glTranslatef(0, 0, 13)
         glRotatef(180, 0, 1, 0)
         prtLight()
@@ -771,6 +773,9 @@ def draw_prt():
             glTranslatef(0, 0, -1)
         glTranslatef(0, 0, -5)
         prtStraightTrack(True)
+        glTranslatef(0, 7, 0)
+        prtLight()
+        glTranslatef(0, -7, 0)
         glTranslatef(0, 0, -10)
         prtStraightTrack(False)
         glTranslatef(0, 0, -10)
@@ -798,6 +803,9 @@ def draw_prt():
         
         glTranslatef(0, 0, 5)
         prtStraightTrack(True)
+        glTranslatef(0, 7, 0)
+        prtLight()
+        glTranslatef(0, -7, 0)
 
         glTranslatef(0, 0, 5)
         for i in range(1,19):
@@ -1118,6 +1126,7 @@ def draw_trees():
     ]
     def draw_tree(heightOffGround, height, trunkWidth, width, positionX, positionY, green):
         glPushMatrix()
+        glTranslatef(0, 1.5, 0)
         glRotatef(-90, 1, 0, 0)
         glTranslatef(positionX, positionY, heightOffGround-2)
         glColor3f(0, green, 0)
@@ -1247,10 +1256,10 @@ def draw_ground():
     glBegin(GL_QUADS)
     glNormal3f(0, 1, 0)  # Normal pointing up
     # Repeat the texture 10 times across the ground
-    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -2, 150)
-    glTexCoord2f(10.0, 0.0); glVertex3f(150, -2, 150)
-    glTexCoord2f(10.0, 10.0); glVertex3f(150, -2, -150)
-    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -2, -150)
+    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -0.5, 150)
+    glTexCoord2f(10.0, 0.0); glVertex3f(150, -0.5, 150)
+    glTexCoord2f(10.0, 10.0); glVertex3f(150, -0.5, -150)
+    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -0.5, -150)
     glEnd()
 
     glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
@@ -1390,8 +1399,8 @@ def draw_road():
     glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
     glNormal3f(0, 1, 0)  # Normal pointing up
-    glVertex3f(x_start_left, 0.01, z_start_left)
-    glVertex3f(x_start_right, 0.01, z_start_right)
+    glVertex3f(6, 0.01, z_start_left)
+    glVertex3f(6, 0.01, -12)
     glVertex3f(x_end_right, 0.01, z_end_right)
     glVertex3f(x_end_left, 0.01, z_end_left)
     glEnd()
@@ -1491,16 +1500,19 @@ def draw_tunnel():
     glDisable(GL_POLYGON_OFFSET_FILL)
 
 def draw_water():
-    """Draws a river."""
-    glColor3f(0, 0.5, 1)  # Keep darker than skybox color
+    glEnable(GL_TEXTURE_2D)  # Enable texture mapping
+    glBindTexture(GL_TEXTURE_2D, water_texture_id)
+    glColor3f(1, 1, 1)  # Keep darker than skybox color
     glBegin(GL_QUADS)
 
+    glNormal3f(0, 1, 0)  # Normal pointing up
     # Long skinny quad for river
-    glVertex3f(-120, 0.01, -150)
-    glVertex3f(-100, 0.01, -150)
-    glVertex3f(-100, 0.01, 150)
-    glVertex3f(-120, 0.01, 150)
+    glTexCoord2f(0, 0); glVertex3f(-120, 0.01, -150)
+    glTexCoord2f(1, 0); glVertex3f(-100, 0.01, -150)
+    glTexCoord2f(1, 10); glVertex3f(-100, 0.01, 150)
+    glTexCoord2f(0, 10);glVertex3f(-120, 0.01, 150)
     glEnd()
+    glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
 
 def draw_pyramid(base_size, height, position, color):
     """Helper function to draw a mountain/pyramid with a snowy peak."""
@@ -1650,21 +1662,21 @@ def draw_background():
         draw_pyramid(base_size, height, position, mountain_color)
 
 # Initial camera position and rotation
-camera_pos = [0, 10, -30]
-camera_rotation = [20, 0]
+camera_pos = [0, -15, -75]
+camera_rotation = [10, 0]
 
 def camera_controls():
     """Handles keyboard input for camera controls."""
     global camera_pos, camera_rotation
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: camera_pos[2] += 1  # Move forward along Z-axis
-    if keys[pygame.K_s]: camera_pos[2] -= 1  # Move backward along Z-axis
-    if keys[pygame.K_d]: camera_pos[0] -= 1  # Move left along X-axis
-    if keys[pygame.K_a]: camera_pos[0] += 1  # Move right along X-axis
-    if keys[pygame.K_UP]: camera_rotation[0] += 1  # Pitch up
-    if keys[pygame.K_DOWN]: camera_rotation[0] -= 1  # Pitch down
-    if keys[pygame.K_RIGHT]: camera_rotation[1] -= 1  # Yaw right
-    if keys[pygame.K_LEFT]: camera_rotation[1] += 1  # Yaw left
+    if keys[pygame.K_w]: camera_pos[2] += 2  # Move forward along Z-axis
+    if keys[pygame.K_s]: camera_pos[2] -= 2  # Move backward along Z-axis
+    if keys[pygame.K_a]: camera_pos[0] -= 2  # Move left along X-axis
+    if keys[pygame.K_d]: camera_pos[0] += 2  # Move right along X-axis
+    if keys[pygame.K_UP]: camera_rotation[0] += 2  # Pitch up
+    if keys[pygame.K_DOWN]: camera_rotation[0] -= 2  # Pitch down
+    if keys[pygame.K_LEFT]: camera_rotation[1] -= 2  # Yaw left
+    if keys[pygame.K_RIGHT]: camera_rotation[1] += 2  # Yaw right
 
 def apply_camera():
     """Applies camera's position and rotation."""
@@ -1748,11 +1760,9 @@ def update_day_night_cycle():
 
 def main():
     global timeVar
-    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, light1Delta, light1On, light2Delta, light2On
-    light1On = False
-    light1Delta = 0
-    light2On = False
-    light2Delta = 0
+    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, lightDelta, lightOn
+    lightOn = False
+    lightDelta = 0
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -1761,7 +1771,10 @@ def main():
     # We will set the light position in the main loop after applying camera transformations
 
     global ground_texture_id
-    ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
+    ground_texture_id = load_texture('snow.jpg')  # Load the ground texture
+
+    global water_texture_id
+    water_texture_id = load_texture('river.jpg')  # Load the water texture
 
     coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
@@ -1806,7 +1819,9 @@ def main():
     car_dl = glGenLists(1)
     glNewList(car_dl, GL_COMPILE)
     glPushMatrix()
+    glTranslatef(-3.5, 0, 0)
     glRotate(-90, 0, 1, 0)
+    glScalef(1.75, 1.75, 1.75)
     draw_model(car_model)
     glPopMatrix()
     glEndList()
@@ -1902,7 +1917,7 @@ def main():
         # Set the light position after applying camera transformations
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
-        glLightfv(GL_LIGHT1, GL_POSITION, [-6, 20.5, 47, 1.0])
+        glLightfv(GL_LIGHT1, GL_POSITION, [10, 50, 46, 1.0])
         glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
         glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 40.0)
         glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 80)
@@ -1911,7 +1926,7 @@ def main():
         glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         #glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05)
 
-        glLightfv(GL_LIGHT2, GL_POSITION, [6, 20.5, 50, 1.0])
+        glLightfv(GL_LIGHT2, GL_POSITION, [10, 50, 49, 1.0])
         glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
         glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 40.0)
         glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 80)
@@ -1920,27 +1935,69 @@ def main():
         glLightfv(GL_LIGHT2, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         #glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.05)
 
-        if(is_day and light1On and light1Delta < 4 or not is_day and not light1On and light1Delta < 4):
-            light1Delta += delta
-        elif(light1Delta > 4):
-            light1On = not light1On
-            light1Delta = 0
+        glTranslatef(31, 20.5, 28)
+        #cube(3, 3, 3)
+        glTranslatef(-31, -20.5, -28)
+        glLightfv(GL_LIGHT3, GL_POSITION, [31, 50, 28, 1.0])
+        glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT3, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT3, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT3, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT3, GL_LINEAR_ATTENUATION, 0.05)
+
+        glLightfv(GL_LIGHT4, GL_POSITION, [28, 50, 28, 1.0])
+        glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT4, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT4, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT4, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT4, GL_LINEAR_ATTENUATION, 0.05)
+
+        glTranslatef(-18, 20.5, 68)
+        #cube(3, 3, 3)
+        glTranslatef(18, -20.5, -68)
+
+        glLightfv(GL_LIGHT5, GL_POSITION, [-21, 50, 65, 1.0])
+        glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT5, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT5, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT5, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT5, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT5, GL_LINEAR_ATTENUATION, 0.05)
+
+        glLightfv(GL_LIGHT6, GL_POSITION, [-18, 50, 65, 1.0])
+        glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT6, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT6, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT6, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT6, GL_LINEAR_ATTENUATION, 0.05)
+
+        if(is_day and lightOn and lightDelta < 4 or not is_day and not lightOn and lightDelta < 4):
+            lightDelta += delta
+        elif(lightDelta > 4):
+            lightOn = not lightOn
+            lightDelta = 0
         
-        if(light1On):
+        if(lightOn):
             glEnable(GL_LIGHT1)
+            glEnable(GL_LIGHT2)
+            glEnable(GL_LIGHT3)
+            glEnable(GL_LIGHT4)
+            glEnable(GL_LIGHT5)
+            glEnable(GL_LIGHT6)
         else:
             glDisable(GL_LIGHT1)
-
-        if(is_day and light2On and light2Delta < 4 or not is_day and not light2On and light2Delta < 4):
-            light2Delta += delta
-        elif(light2Delta > 4):
-            light2On = not light2On
-            light2Delta = 0
-        
-        if(light2On):
-            glEnable(GL_LIGHT2)
-        else:
             glDisable(GL_LIGHT2)
+            glDisable(GL_LIGHT3)
+            glDisable(GL_LIGHT4)
+            glDisable(GL_LIGHT5)
+            glDisable(GL_LIGHT6)
 
         # Draw scene
         draw_prt()
