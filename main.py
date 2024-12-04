@@ -1756,6 +1756,17 @@ def main():
     human_arm_model.send_texture()
     human_arm_model.unbind_texture()
 
+    scene_dl = glGenLists(1)
+    glNewList(scene_dl, GL_COMPILE)
+    draw_tunnel()
+    draw_ground()
+    draw_road()
+    draw_water()
+    draw_background()
+    draw_prt()
+    draw_trees()
+    glEndList()
+
     global houseObjects
     houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
 
@@ -1815,13 +1826,7 @@ def main():
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
         # Draw scene
-        draw_tunnel()
-        draw_ground()
-        draw_road()
-        draw_water()
-        draw_background()
-        draw_prt()
-        draw_trees()
+        glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
         for car in cars:
             t = (timeVar - car.start_time) / car.time_to_finished
