@@ -676,7 +676,7 @@ def prtStraightTrack(pillar):
 
     glColor3f(0.6, 0.4, 0)
 
-    glTranslatef(2, -0.4, 0)
+    glTranslatef(2, 1.5, 0)
     cube(3, 0.01, 10)
 
     glTranslatef(5, 0, 0)
@@ -1124,12 +1124,12 @@ def draw_trees():
     def draw_tree(heightOffGround, height, trunkWidth, width, positionX, positionY, green):
         glPushMatrix()
         glRotatef(-90, 1, 0, 0)
-        glTranslatef(positionX, positionY, heightOffGround-2)
+        glTranslatef(positionX, positionY, 1.5+heightOffGround-2)
         glColor3f(0, green, 0)
         quadric = gluNewQuadric()
         gluCylinder(quadric, width, 0.1, height, 15, 1)
 
-        glTranslatef(0, 0, -heightOffGround)
+        glTranslatef(0, 0, -heightOffGround+1.5)
         glColor3f(0.6, 0.3, 0)
         quadric = gluNewQuadric()
         gluCylinder(quadric, trunkWidth, trunkWidth, heightOffGround, 5, 1)
@@ -1252,10 +1252,10 @@ def draw_ground():
     glBegin(GL_QUADS)
     glNormal3f(0, 1, 0)  # Normal pointing up
     # Repeat the texture 10 times across the ground
-    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -2, 150)
-    glTexCoord2f(10.0, 0.0); glVertex3f(150, -2, 150)
-    glTexCoord2f(10.0, 10.0); glVertex3f(150, -2, -150)
-    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -2, -150)
+    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -0.5, 150)
+    glTexCoord2f(10.0, 0.0); glVertex3f(150, -0.5, 150)
+    glTexCoord2f(10.0, 10.0); glVertex3f(150, -0.5, -150)
+    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -0.5, -150)
     glEnd()
 
     glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
@@ -1395,8 +1395,8 @@ def draw_road():
     glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
     glNormal3f(0, 1, 0)  # Normal pointing up
-    glVertex3f(x_start_left, 0.01, z_start_left)
-    glVertex3f(x_start_right, 0.01, z_start_right)
+    glVertex3f(6, 0.01, z_start_left)
+    glVertex3f(6, 0.01, -12)
     glVertex3f(x_end_right, 0.01, z_end_right)
     glVertex3f(x_end_left, 0.01, z_end_left)
     glEnd()
