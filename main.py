@@ -1594,7 +1594,7 @@ class Human:
     def stop_waving(self):
         self.is_waving = False
 
-def lerp(t, a, b):
+def lerpg(t, a, b):
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 
 def draw_human(human, human_body_model, human_arm_model):
@@ -1781,12 +1781,16 @@ def main():
 
     # Human and car state
     human = Human()
-    cars = []
+    cars : List[Car] = []
 
     # Load Models
     car_model = Model.load("Resources/car.obj", "Resources/Car.png")
     car_model.send_texture()
     car_model.unbind_texture()
+    car_dl = glGenLists(1)
+    glNewList(car_dl, GL_COMPILE)
+    draw_model(car_model)
+    glEndList()
     human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png")
     human_body_model.send_texture()
     human_body_model.unbind_texture()
@@ -1837,6 +1841,8 @@ def main():
                         transition_in_progress = True
                         transition_start_time = pygame.time.get_ticks()
                         is_day = not is_day  # Toggle between day and night
+                elif event.key == K_k:
+                    cars.append(Car(timeVar, [0, 0, 0], [15, 15, 15]))
 
         camera_controls()  # Update camera based on user input
 
@@ -1859,6 +1865,13 @@ def main():
         draw_prt()
         draw_trees()
         draw_human(human, human_body_model, human_arm_model)
+        for car in cars:
+            t = (timeVar - car.start_time) / car.time_to_finished
+            if t >= car.time_to_finished:
+                cars.remove(car)
+                continue
+            pos = lerpg(t, car.pos, car.dest)
+            draw_at(lambda: glCallList(car_dl), *pos)
 
         glPushMatrix()
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
