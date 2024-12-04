@@ -615,13 +615,6 @@ def draw_prt():
         if position > 33 and position < 44:
             glTranslatef(position-33-round(turns)*0.306, 0, -0.016*(position-33-round(turns)*0.306))
 
-        '''turns = max(0, min((position - 40)/0.153, 36))
-        for i in range(round(turns)):
-            glRotatef(-2.5, 0, 1, 0)
-            glTranslatef(0.153, 0, -0.01)
-        if position > 40 and position < 45.5:
-            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
-
         glTranslatef(max(0, min(position-44, 5.75)), 0, 0)
         
         turns = max(0, min((position - 49.75)/0.153, 36))
@@ -631,8 +624,24 @@ def draw_prt():
         if position > 49.75 and position < 55.25:
             glTranslatef(position-49.75-round(turns)*0.153, 0, 0.065*(position-49.75-round(turns)*0.153))
         
-        glTranslatef(max(0, min(position-55.25, 12)), 0, 0)
+        glTranslatef(max(0, min(position-55.25, 12.25)), 0, 0)
 
+        turns = max(0, min((position - 67.5)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position > 67.5 and position < 78.5:
+            glTranslatef(position-67.5-round(turns)*0.306, 0, -0.016*(position-67.5-round(turns)*0.306))
+        
+        glTranslatef(max(0, min(position-78.5, 34.5)), 0, 0)
+
+        '''turns = max(0, min((position - 40)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position > 40 and position < 45.5:
+            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
+        
         '''turns = max(0, min((position - 21)/0.306, 36))
         for i in range(round(turns)):
             glRotatef(2.5, 0, 1, 0)
@@ -645,28 +654,8 @@ def draw_prt():
         prtCar()
         glPopMatrix()
 
-        glRotatef(180, 0, 1, 0)
-        glTranslatef(-17, 0, -19.55)
-
-        glTranslatef(min(position2, 3.5), 0, 0)
-
-        turns = max(0, min((position2 - 3.5)/0.153, 36))
-        for i in range(round(turns)):
-            glRotatef(-2.5, 0, 1, 0)
-            glTranslatef(0.153, 0, -0.01)
-        if position2 > 3.5 and position2 < 9:
-            glTranslatef(position2-3.5-round(turns)*0.153, 0, -0.065*(position2-3.5-round(turns)*0.153))
-
-        glTranslatef(max(0, min(position2-9, 12)), 0, 0)
-        
-        turns = max(0, min((position2 - 21)/0.306, 36))
-        for i in range(round(turns)):
-            glRotatef(2.5, 0, 1, 0)
-            glTranslatef(0.306, 0, -0.005)
-        if position2 > 21 and position2 < 32:
-            glTranslatef(position2-21-round(turns)*0.306, 0, -0.016*(position2-21-round(turns)*0.306))
-        
-        glTranslatef(max(0, min(position2-32, 4)), 0, 0)
+        glRotatef(270, 0, 1, 0)
+        glTranslatef(-58, 0, -60)
 
         prtCar()
         glPopMatrix()
@@ -1156,10 +1145,10 @@ def main():
         if speed2 < minSpeed:
             speed2 = minSpeed
         position2 += speed2*delta
-        if position > 100:
+        if position > 112:
             position = 0
             speed = 0
-        if position2 > 100:
+        if position2 > 112:
             position2 = 0
             speed2 = 0
 
