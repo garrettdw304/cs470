@@ -1723,7 +1723,9 @@ def update_day_night_cycle():
 
 def main():
     global timeVar
-    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color
+    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, light1Delta, light1On
+    light1On = False
+    light1Delta = 0
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -1857,6 +1859,26 @@ def main():
 
         # Set the light position after applying camera transformations
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
+
+        glLightfv(GL_LIGHT1, GL_POSITION, [-6, 20.5, 47, 1.0])
+        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0)
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 10.0)
+        glLightfv(GL_LIGHT1, GL_AMBIENT, [0.1, 0.1, 0.1, 0.5])
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05)
+
+        if(is_day and light1On and light1Delta < 4 or not is_day and not light1On and light1Delta < 4):
+            light1Delta += delta
+        elif(light1Delta > 4):
+            light1On = not light1On
+            light1Delta = 0
+        
+        if(light1On):
+            glEnable(GL_LIGHT1)
+        else:
+            glDisable(GL_LIGHT1)
 
         # Draw scene
         draw_prt()
