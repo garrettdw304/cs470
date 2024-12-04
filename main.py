@@ -599,21 +599,21 @@ def prtCar():
 def prtStraightTrack(pillar):
     glPushMatrix()
 
-    glColor3f(0.6, 0.3, 0)
+    glColor3f(0.6, 0.5, 0.3)
 
     cube(10, 1, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
-    glColor3f(0.5, 0.4, 0)
+    glColor3f(0.3, 0.3, 0.3)
 
     glTranslatef(0, 0.6, 0)
     cube(0.4, 1, 10)
 
-    glColor3f(0.5, 0.5, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
@@ -644,47 +644,50 @@ def prtStraightTrack(pillar):
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
 
-    glColor3f(0.4, 0.2, 0)
+    glColor3f(0.6, 0.55, 0.5)
 
     glTranslatef(5.25, -0.4, 5)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(-0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    glColor3f(0.35, 0.25, 0.05)
 
     glTranslatef(-0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.4, 0.2, 0)
+    glColor3f(0.6, 0.55, 0.5)
 
     glTranslatef(-9.35, 0, 0)
     cube(0.2, 1.2, 10)
 
-    glColor3f(0.45, 0.4, 0)
+    glColor3f(0.4, 0.3, 0.1)
 
     glTranslatef(0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
-    glColor3f(0.4, 0.35, 0.05)
+    glColor3f(0.35, 0.25, 0.05)
 
     glTranslatef(0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
-    glColor3f(0.6, 0.4, 0)
+    glColor3f(0.5, 0.4, 0.2)
 
-    glTranslatef(2, 1.5, 0)
+    glTranslatef(2, -0.5, 0)
     cube(3, 0.01, 10)
 
     glTranslatef(5, 0, 0)
     cube(3, 0.01, 10)
 
+    glTranslatef(0, -0.1, 0)
+
     glTranslatef(2.5, 0, 0)
 
     glColor3f(0.5, 0.5, 0.5)
+
     if(pillar):
         glPushMatrix()
         glTranslatef(-5, -8, 0)
