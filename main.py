@@ -676,7 +676,7 @@ def prtStraightTrack(pillar):
 
     glColor3f(0.6, 0.4, 0)
 
-    glTranslatef(2, -0.6, 0)
+    glTranslatef(2, -0.4, 0)
     cube(3, 0.01, 10)
 
     glTranslatef(5, 0, 0)
@@ -739,8 +739,8 @@ def prtLight():
 
     glColor3f(0.6, 0.6, 0.6)
 
-    glTranslatef(0.5, 0, 0)
-    cube(2, 1, 0.2)
+    glTranslatef(0, 0, 0)
+    cube(2.5, 1, 0.2)
 
     glPopMatrix()
 
@@ -755,7 +755,6 @@ def draw_prt():
 
         glPushMatrix()
         glTranslatef(0, 7, -5)
-        prtLight()
         glTranslatef(0, 0, 13)
         glRotatef(180, 0, 1, 0)
         prtLight()
@@ -771,6 +770,9 @@ def draw_prt():
             glTranslatef(0, 0, -1)
         glTranslatef(0, 0, -5)
         prtStraightTrack(True)
+        glTranslatef(0, 7, 0)
+        prtLight()
+        glTranslatef(0, -7, 0)
         glTranslatef(0, 0, -10)
         prtStraightTrack(False)
         glTranslatef(0, 0, -10)
@@ -798,6 +800,9 @@ def draw_prt():
         
         glTranslatef(0, 0, 5)
         prtStraightTrack(True)
+        glTranslatef(0, 7, 0)
+        prtLight()
+        glTranslatef(0, -7, 0)
 
         glTranslatef(0, 0, 5)
         for i in range(1,19):
@@ -1723,11 +1728,9 @@ def update_day_night_cycle():
 
 def main():
     global timeVar
-    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, light1Delta, light1On, light2Delta, light2On
-    light1On = False
-    light1Delta = 0
-    light2On = False
-    light2Delta = 0
+    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, lightDelta, lightOn
+    lightOn = False
+    lightDelta = 0
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -1862,7 +1865,7 @@ def main():
         # Set the light position after applying camera transformations
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
-        glLightfv(GL_LIGHT1, GL_POSITION, [-6, 20.5, 47, 1.0])
+        glLightfv(GL_LIGHT1, GL_POSITION, [10, 50, 46, 1.0])
         glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
         glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 40.0)
         glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 80)
@@ -1871,7 +1874,7 @@ def main():
         glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         #glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05)
 
-        glLightfv(GL_LIGHT2, GL_POSITION, [6, 20.5, 50, 1.0])
+        glLightfv(GL_LIGHT2, GL_POSITION, [10, 50, 49, 1.0])
         glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
         glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 40.0)
         glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 80)
@@ -1880,27 +1883,69 @@ def main():
         glLightfv(GL_LIGHT2, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         #glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.05)
 
-        if(is_day and light1On and light1Delta < 4 or not is_day and not light1On and light1Delta < 4):
-            light1Delta += delta
-        elif(light1Delta > 4):
-            light1On = not light1On
-            light1Delta = 0
+        glTranslatef(31, 20.5, 28)
+        #cube(3, 3, 3)
+        glTranslatef(-31, -20.5, -28)
+        glLightfv(GL_LIGHT3, GL_POSITION, [31, 50, 28, 1.0])
+        glLightfv(GL_LIGHT3, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT3, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT3, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT3, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT3, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT3, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT3, GL_LINEAR_ATTENUATION, 0.05)
+
+        glLightfv(GL_LIGHT4, GL_POSITION, [28, 50, 28, 1.0])
+        glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT4, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT4, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT4, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT4, GL_LINEAR_ATTENUATION, 0.05)
+
+        glTranslatef(-18, 20.5, 68)
+        #cube(3, 3, 3)
+        glTranslatef(18, -20.5, -68)
+
+        glLightfv(GL_LIGHT5, GL_POSITION, [-21, 50, 65, 1.0])
+        glLightfv(GL_LIGHT5, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT5, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT5, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT5, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT5, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT5, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT5, GL_LINEAR_ATTENUATION, 0.05)
+
+        glLightfv(GL_LIGHT6, GL_POSITION, [-18, 50, 65, 1.0])
+        glLightfv(GL_LIGHT6, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT6, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT6, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT6, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT6, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT6, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT6, GL_LINEAR_ATTENUATION, 0.05)
+
+        if(is_day and lightOn and lightDelta < 4 or not is_day and not lightOn and lightDelta < 4):
+            lightDelta += delta
+        elif(lightDelta > 4):
+            lightOn = not lightOn
+            lightDelta = 0
         
-        if(light1On):
+        if(lightOn):
             glEnable(GL_LIGHT1)
+            glEnable(GL_LIGHT2)
+            glEnable(GL_LIGHT3)
+            glEnable(GL_LIGHT4)
+            glEnable(GL_LIGHT5)
+            glEnable(GL_LIGHT6)
         else:
             glDisable(GL_LIGHT1)
-
-        if(is_day and light2On and light2Delta < 4 or not is_day and not light2On and light2Delta < 4):
-            light2Delta += delta
-        elif(light2Delta > 4):
-            light2On = not light2On
-            light2Delta = 0
-        
-        if(light2On):
-            glEnable(GL_LIGHT2)
-        else:
             glDisable(GL_LIGHT2)
+            glDisable(GL_LIGHT3)
+            glDisable(GL_LIGHT4)
+            glDisable(GL_LIGHT5)
+            glDisable(GL_LIGHT6)
 
         # Draw scene
         draw_prt()
