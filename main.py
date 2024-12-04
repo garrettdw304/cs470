@@ -1714,9 +1714,11 @@ def update_day_night_cycle():
 
 def main():
     global timeVar
-    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, light1Delta, light1On
+    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color, light1Delta, light1On, light2Delta, light2On
     light1On = False
     light1Delta = 0
+    light2On = False
+    light2Delta = 0
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -1853,12 +1855,21 @@ def main():
 
         glLightfv(GL_LIGHT1, GL_POSITION, [-6, 20.5, 47, 1.0])
         glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
-        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0)
-        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 10.0)
-        glLightfv(GL_LIGHT1, GL_AMBIENT, [0.1, 0.1, 0.1, 0.5])
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT1, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
         glLightfv(GL_LIGHT1, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
         glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
-        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05)
+        #glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.05)
+
+        glLightfv(GL_LIGHT2, GL_POSITION, [6, 20.5, 50, 1.0])
+        glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, [0.0, -1.0, 0.0])
+        glLightf(GL_LIGHT2, GL_SPOT_CUTOFF, 40.0)
+        glLightf(GL_LIGHT2, GL_SPOT_EXPONENT, 80)
+        #glLightfv(GL_LIGHT2, GL_AMBIENT, [0.1, 0.1, 0.1, 0.1])
+        glLightfv(GL_LIGHT2, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
+        glLightfv(GL_LIGHT2, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        #glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.05)
 
         if(is_day and light1On and light1Delta < 4 or not is_day and not light1On and light1Delta < 4):
             light1Delta += delta
@@ -1870,6 +1881,17 @@ def main():
             glEnable(GL_LIGHT1)
         else:
             glDisable(GL_LIGHT1)
+
+        if(is_day and light2On and light2Delta < 4 or not is_day and not light2On and light2Delta < 4):
+            light2Delta += delta
+        elif(light2Delta > 4):
+            light2On = not light2On
+            light2Delta = 0
+        
+        if(light2On):
+            glEnable(GL_LIGHT2)
+        else:
+            glDisable(GL_LIGHT2)
 
         # Draw scene
         draw_prt()
