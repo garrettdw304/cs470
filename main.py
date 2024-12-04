@@ -1317,6 +1317,11 @@ def main():
     Model.default_material.specular_exponent = glGetMaterialfv(GL_FRONT, GL_SHININESS)
     Model.default_material.emissive_material = glGetMaterialfv(GL_FRONT, GL_EMISSION)
 
+    # Load Models
+    car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
+    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
+    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
+
     while True:
         #prt position
         delta = time.time() - previousTime
