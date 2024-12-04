@@ -11,6 +11,16 @@ from PIL import Image
 
 global timeVar; timeVar = 0  # Time since the beginning of the program
 
+def draw_house_at(position, rotate, scale):
+    for object in houseObjects:
+        glPushMatrix()
+        glTranslate(*position)
+        glScale(*scale)
+        if rotate:
+            glRotate(180, 0, 0)
+        draw_model(object)
+        glPopMatrix()
+
 def load_texture(image_path):
     """Loads a texture from an image file and returns the texture ID."""
     # Generate a texture ID
@@ -1767,6 +1777,9 @@ def main():
     human_arm_model.send_texture()
     human_arm_model.unbind_texture()
 
+    global houseObjects
+    houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
+
     while True:
         # PRT position updates
         delta = time.time() - previousTime
@@ -1837,6 +1850,8 @@ def main():
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
         glPopMatrix()
+
+        draw_house_at((30,0,0), False, (.5,.5,.5))
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
