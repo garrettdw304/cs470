@@ -1562,6 +1562,15 @@ class Human:
     def stop_waving(self):
         self.is_waving = False
 
+class GarageDoor:
+    started_opening = 0
+    is_opening = False
+    def start_opening(self, cur_time):
+        self.is_opening = True
+        self.started_opening = cur_time
+    def stop_opening(self):
+        self.is_opening = False
+
 def lerpg(t, a, b):
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 
@@ -1586,6 +1595,22 @@ def draw_human(human, human_body_model, human_arm_model):
         draw_at(lambda: draw_model(human_arm_model), -0.24308, 1.3941, 0)
     draw_model(human_body_model)
     glPopMatrix()
+
+def draw_garage(door, door_model, scale, position):
+    global timeVar
+    if door.is_opening:
+        rot = (timeVar - door.started_opening)
+        if rot > 90:
+            rot = 90
+        glPushMatrix()
+        glScale(*scale)
+        glTranslate(position[0]+11-rot*.06, position[1]+7-rot*.01, position[2]-22.5)
+        glRotate((rot+180), 0, 0, 1)
+        glTranslate(*position)
+        draw_model(door_model)
+        glPopMatrix()
+    else:
+        draw_house_at([door_model], position, False, scale)
 
 def draw_background():
     """Draws many pyramids to create a mountain range."""
@@ -1634,12 +1659,12 @@ def camera_controls():
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]: camera_pos[2] += 1  # Move forward along Z-axis
     if keys[pygame.K_s]: camera_pos[2] -= 1  # Move backward along Z-axis
-    if keys[pygame.K_a]: camera_pos[0] -= 1  # Move left along X-axis
-    if keys[pygame.K_d]: camera_pos[0] += 1  # Move right along X-axis
+    if keys[pygame.K_d]: camera_pos[0] -= 1  # Move left along X-axis
+    if keys[pygame.K_a]: camera_pos[0] += 1  # Move right along X-axis
     if keys[pygame.K_UP]: camera_rotation[0] += 1  # Pitch up
     if keys[pygame.K_DOWN]: camera_rotation[0] -= 1  # Pitch down
-    if keys[pygame.K_LEFT]: camera_rotation[1] -= 1  # Yaw left
-    if keys[pygame.K_RIGHT]: camera_rotation[1] += 1  # Yaw right
+    if keys[pygame.K_RIGHT]: camera_rotation[1] -= 1  # Yaw right
+    if keys[pygame.K_LEFT]: camera_rotation[1] += 1  # Yaw left
 
 def apply_camera():
     """Applies camera's position and rotation."""
@@ -1760,9 +1785,10 @@ def main():
     Model.default_material.specular_exponent = glGetMaterialfv(GL_FRONT, GL_SHININESS)
     Model.default_material.emissive_material = glGetMaterialfv(GL_FRONT, GL_EMISSION)
 
-    # Human and car state
+    # Human, garage, and car state
     human = Human()
     cars : List[Car] = []
+    garage = GarageDoor()
 
     # Load Models
     houseObjects = [[Model.load("Resources/furniture.obj", "Resources/brown.png"), Model.load("Resources/doors.obj", "Resources/door.png"), Model.load("Resources/walls.obj", x[0]), Model.load("Resources/roof.obj", x[1])] for x in [("Resources/brick.png", "Resources/roof.png"), ("Resources/brick1.png", "Resources/roof1.png"), ("Resources/brick2.png", "Resources/roof2.png")]]
@@ -1770,6 +1796,10 @@ def main():
         for models in lists:
             models.send_texture(1024)
             models.unbind_texture()
+    garageObjects = [Model.load("Resources/gfurn.obj", "Resources/brown.png"), Model.load("Resources/gdoor.obj", "Resources/door.png"), Model.load("Resources/gwall.obj", "Resources/roof.png"), Model.load("Resources/groof.obj", "Resources/brown.png")]
+    for models in garageObjects:
+        models.send_texture(1024)
+        models.unbind_texture()
     car_model = Model.load("Resources/car.obj", "Resources/Car.png")
     car_model.send_texture(1024)
     car_model.unbind_texture()
@@ -1786,6 +1816,9 @@ def main():
     human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png")
     human_arm_model.send_texture(1024)
     human_arm_model.unbind_texture()
+    garage_model = Model.load("Resources/garage.obj", "Resources/door.png")
+    garage_model.send_texture(1024)
+    garage_model.unbind_texture()
 
     scene_dl = glGenLists(1)
     glNewList(scene_dl, GL_COMPILE)
@@ -1798,6 +1831,8 @@ def main():
     draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
     draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
     draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
+    draw_house_at(garageObjects, (-26, -1, 40), False, (.7, .7, .7))
+    draw_at(lambda: draw_model(car_model), -15, -1, 29)
     glPushMatrix()
     glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
     # Draw the coliseum components
@@ -1849,6 +1884,11 @@ def main():
                         is_day = not is_day  # Toggle between day and night
                 elif event.key == K_k:
                     cars.append(Car([0, 0, -50]))
+                elif event.key == K_g:
+                    if garage.is_opening:
+                        garage.stop_opening()
+                    else:
+                        garage.start_opening(timeVar)
 
         camera_controls()  # Update camera based on user input
 
@@ -1906,6 +1946,7 @@ def main():
         draw_prt()
         glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
+        draw_garage(garage, garage_model, (.7, .7, .7), (-26, -1, 40))
         for car in cars:
             car.pos = [car.pos[0], car.pos[1], car.pos[2] + delta * 10]
             if car.pos[2] > 150:
