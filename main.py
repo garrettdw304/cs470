@@ -1126,13 +1126,14 @@ def draw_trees():
     ]
     def draw_tree(heightOffGround, height, trunkWidth, width, positionX, positionY, green):
         glPushMatrix()
+        glTranslatef(0, 1.5, 0)
         glRotatef(-90, 1, 0, 0)
-        glTranslatef(positionX, positionY, 1.5+heightOffGround-2)
+        glTranslatef(positionX, positionY, heightOffGround-2)
         glColor3f(0, green, 0)
         quadric = gluNewQuadric()
         gluCylinder(quadric, width, 0.1, height, 15, 1)
 
-        glTranslatef(0, 0, -heightOffGround+1.5)
+        glTranslatef(0, 0, -heightOffGround)
         glColor3f(0.6, 0.3, 0)
         quadric = gluNewQuadric()
         gluCylinder(quadric, trunkWidth, trunkWidth, heightOffGround, 5, 1)
@@ -1633,8 +1634,8 @@ def draw_background():
         draw_pyramid(base_size, height, position, mountain_color)
 
 # Initial camera position and rotation
-camera_pos = [0, 10, -30]
-camera_rotation = [20, 0]
+camera_pos = [0, -15, -75]
+camera_rotation = [10, 0]
 
 def camera_controls():
     """Handles keyboard input for camera controls."""
@@ -1782,7 +1783,9 @@ def main():
     car_dl = glGenLists(1)
     glNewList(car_dl, GL_COMPILE)
     glPushMatrix()
+    glTranslatef(-3.5, 0, 0)
     glRotate(-90, 0, 1, 0)
+    glScalef(1.75, 1.75, 1.75)
     draw_model(car_model)
     glPopMatrix()
     glEndList()
