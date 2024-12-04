@@ -829,7 +829,35 @@ def draw_prt():
         glPopMatrix()
 
         glRotatef(270, 0, 1, 0)
-        glTranslatef(-58, 0, -60)
+        glTranslatef(-58, 0, -59.6)
+
+        glTranslatef(min(position2, 35), 0, 0)
+        turns = max(0, min((position2 - 35)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position2 > 35 and position2 < 40.5:
+            glTranslatef(position2-35-round(turns)*0.153, 0, -0.065*(position2-35-round(turns)*0.153))
+
+        glTranslatef(max(0, min(position2-40.5, 12)), 0, 0)
+
+        turns = max(0, min((position2 - 52.5)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position2 > 52.5 and position2 < 63.5:
+            glTranslatef(position2-52.5-round(turns)*0.306, 0, -0.016*(position2-52.5-round(turns)*0.306))
+        
+        glTranslatef(max(0, min(position2-63.5, 5.75)), 0, 0)
+
+        turns = max(0, min((position2 - 69.25)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position2 > 69.25 and position2 < 74.75:
+            glTranslatef(position2-69.25-round(turns)*0.153, 0, -0.065*(position2-69.25-round(turns)*0.153))
+
+        glTranslatef(max(0, min(position2-74.75, 37.25)), 0, 0)
 
         prtCar()
         glPopMatrix()
