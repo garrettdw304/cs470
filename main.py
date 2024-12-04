@@ -1855,7 +1855,6 @@ def main():
         draw_human(human, human_body_model, human_arm_model)
         for car in cars:
             car.pos = [car.pos[0], car.pos[1], car.pos[2] + delta * 10]
-            print(car.pos[2])
             if car.pos[2] > 150:
                 cars.remove(car)
                 continue
