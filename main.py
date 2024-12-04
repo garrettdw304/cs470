@@ -1743,6 +1743,7 @@ def update_day_night_cycle():
 
         glClearColor(*background_color)
 
+
 def main():
     global timeVar
     global is_day, transition_in_progress, transition_start_time, current_light_position, background_color
