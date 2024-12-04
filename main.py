@@ -12,13 +12,13 @@ import numpy as np
 
 global timeVar; timeVar = 0  # Time since the beginning of the program
 
-def draw_house_at(position, rotate, scale):
-    for object in houseObjects:
+def draw_house_at(models, position, rotate, scale):
+    for object in models:
         glPushMatrix()
         glTranslate(*position)
         glScale(*scale)
         if rotate:
-            glRotate(180, 0, 0)
+            glRotate(180, 0, 1, 0)
         draw_model(object)
         glPopMatrix()
 
@@ -123,7 +123,7 @@ class Model:
 
     # Sends the texture to the GPU and stores the texture id into texture_id. Throws if texture_id is not -1.
     # When leaving this method, the currently bound texture is this texture
-    def send_texture(self):
+    def send_texture(self, resolution):
         if self.texture_id != -1: raise Exception("Texture is already in GPU.")
         if self.texture is None: raise Exception("Cannot send a texture if there is not one to send.")
         self.texture_id = glGenTextures(1)
@@ -132,7 +132,7 @@ class Model:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, self.texture) # TODO: 1024 magic number
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, resolution, resolution, 0, GL_RGB, GL_UNSIGNED_BYTE, self.texture) # TODO: 1024 magic number
 
     def clear_texture(self):
         if self.texture_id == -1: raise Exception("Texture is not loaded into GPU.")
@@ -194,56 +194,42 @@ class Model:
             texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Model(vertices, normals, uvs, faces, material, texture, -1)
 
-def draw_model(model: Model):
+def draw_model(model : Model):
     if model.texture is not None:
         model.bind_texture()
     model.material.bind()
-
-    # Prepare arrays for vertex positions, normals, and texture coordinates
-    vertices = []
-    normals = []
-    tex_coords = []
-
+    length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
     for face in model.faces:
-        for indices in face:
-            vertices.extend(model.vertices[indices[0]])
-            normals.extend(model.normals[indices[2]])
+        if len(face) != length:
+            if length != -1:
+                glEnd()
+            length = len(face)
+            if length != 3 or length != 4:
+                length = 0
+            if length == 3:
+                glBegin(GL_TRIANGLES)
+            elif length == 4:
+                glBegin(GL_QUADS)
+            else:
+                glBegin(GL_POLYGON)
+        elif length == 0:
+            glEnd()
+            glBegin(GL_POLYGON)
+
+        for indices in face:  # Each 'indices' contains 3 vertex indices: 0 -> mesh vertex index, 1 -> texture vertex index, 2 -> normal vertex index
+            glNormal3fv(model.normals[indices[2]])
             if model.texture is not None:
-                tex_coords.extend(model.uvs[indices[1]])
-
-    # Convert lists to NumPy arrays
-    vertices_array = np.array(vertices, dtype=np.float32)
-    normals_array = np.array(normals, dtype=np.float32)
-    if model.texture is not None:
-        tex_coords_array = np.array(tex_coords, dtype=np.float32)
-
-    # Enable client states
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_NORMAL_ARRAY)
-    if model.texture is not None:
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
-
-    # Set pointers
-    glVertexPointer(3, GL_FLOAT, 0, vertices_array)
-    glNormalPointer(GL_FLOAT, 0, normals_array)
-    if model.texture is not None:
-        glTexCoordPointer(2, GL_FLOAT, 0, tex_coords_array)
-
-    # Draw arrays
-    glDrawArrays(GL_TRIANGLES, 0, len(vertices) // 3)
-
-    # Disable client states
-    glDisableClientState(GL_VERTEX_ARRAY)
-    glDisableClientState(GL_NORMAL_ARRAY)
-    if model.texture is not None:
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
-
+                glTexCoord2fv(model.uvs[indices[1]])
+            glVertex3fv(model.vertices[indices[0]])
+    if length != -1:
+        glEnd()
     if model.texture is not None:
         model.unbind_texture()
     model.material.unbind()
 
 def cube(xSize, ySize, zSize):
     glBegin(GL_POLYGON)
+    glNormal3f(0, -1, 0)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
@@ -251,6 +237,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 1, 0)
     glVertex3f(-xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, zSize/2)
@@ -258,6 +245,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(-xSize/2, ySize/2, -zSize/2)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(-xSize/2, -ySize/2, zSize/2)
@@ -265,6 +253,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(-1, 0, 0)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
@@ -272,6 +261,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
@@ -279,6 +269,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-xSize/2, -ySize/2, zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
     glVertex3f(xSize/2, ySize/2, zSize/2)
@@ -289,7 +280,6 @@ def prtCar():
     glTranslatef(0, 0, 0.5)
 
     glColor3f(1.0, 1.0, 0)
-    #setMaterial(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -299,7 +289,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0, 0, 1.0)
-    #setMaterial(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
@@ -346,7 +335,6 @@ def prtCar():
     glTranslatef(0, 0, -1)
 
     glColor3f(1.0, 1.0, 0)
-    #setMaterial(1.0, 1.0, 0)
     
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -356,7 +344,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0, 0, 1.0)
-    #setMaterial(0, 0, 1.0)
 
     glBegin(GL_POLYGON)
     glVertex3f(-1, 0.2, 0)
@@ -401,7 +388,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0)
-    #setMaterial(1, 1, 0)
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
     glVertex3f(0.91, 1.3, 0)
@@ -459,7 +445,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0.3, 0.3, 0.3)
-    #setMaterial(0.3, 0.3, 0.3)
 
     glBegin(GL_POLYGON)
     glVertex3f(-0.5, 0, 0)
@@ -497,7 +482,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0.8)
-    #setMaterial(1.0, 1.0, 0.8)
 
     glBegin(GL_POLYGON)
     glVertex3f(1, 0.21, 0)
@@ -507,7 +491,6 @@ def prtCar():
     glEnd()
 
     glColor3f(1, 1, 0)
-    #setMaterial(1.0, 1.0, 0)
 
     glBegin(GL_POLYGON)
     glVertex3f(0.9, 1.4, 0)
@@ -517,7 +500,6 @@ def prtCar():
     glEnd()
 
     glColor3f(0.6, 0.6, 0.6)
-    #setMaterial(0.6, 0.6, 0.6)
 
     glPushMatrix()
 
@@ -543,7 +525,6 @@ def prtCar():
     glPushMatrix()
 
     glColor3f(0.1, 0.1, 0.1)
-    #setMaterial(0.1, 0.1, 0.1)
 
     glTranslatef(0.8, -0.02, 0)
     quadric = gluNewQuadric()
@@ -582,7 +563,6 @@ def prtCar():
     glPushMatrix()
 
     glColor3f(0.2, 0.2, 0.2)
-    #setMaterial(0.2, 0.2, 0.2)
 
     glTranslatef(-1.05, 0.1, 0.5)
     cube(0.1, 0.2, 1)
@@ -596,30 +576,25 @@ def prtStraightTrack(pillar):
     glPushMatrix()
 
     glColor3f(0.6, 0.3, 0)
-    #setMaterial(0.6, 0.3, 0)
 
     cube(10, 1, 10)
 
     glColor3f(0.6, 0.4, 0)
-    #setMaterial(0.6, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
     glColor3f(0.5, 0.4, 0)
-    #setMaterial(0.5, 0.4, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(0.4, 1, 10)
 
     glColor3f(0.5, 0.5, 0)
-    #setMaterial(0.5, 0.5, 0)
 
     glTranslatef(0, 0.6, 0)
     cube(1, 0.2, 10)
 
     glColor3f(0.7, 0.7, 0.7)
-    #setMaterial(0.7, 0.7, 0.7)
 
     glTranslatef(0.35, -0.3, -5)
     quadric = gluNewQuadric()
@@ -646,43 +621,36 @@ def prtStraightTrack(pillar):
     gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
 
     glColor3f(0.4, 0.2, 0)
-    #setMaterial(0.4, 0.2, 0)
 
     glTranslatef(5.25, -0.4, 5)
     cube(0.2, 1.2, 10)
 
     glColor3f(0.45, 0.4, 0)
-    #setMaterial(0.45, 0.4, 0)
 
     glTranslatef(-0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
     glColor3f(0.4, 0.35, 0.05)
-    #setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(-0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
     glColor3f(0.4, 0.2, 0)
-    #setMaterial(0.4, 0.2, 0)
 
     glTranslatef(-9.35, 0, 0)
     cube(0.2, 1.2, 10)
 
     glColor3f(0.45, 0.4, 0)
-    #setMaterial(0.45, 0.4, 0)
 
     glTranslatef(0.25, 0, 0)
     cube(0.3, 0.1, 10)
 
     glColor3f(0.4, 0.35, 0.05)
-    #setMaterial(0.4, 0.35, 0.05)
 
     glTranslatef(0.2, 0, 0)
     cube(0.1, 0.6, 10)
 
     glColor3f(0.6, 0.4, 0)
-    #setMaterial(0.6, 0.4, 0)
 
     glTranslatef(2, -0.6, 0)
     cube(3, 0.01, 10)
@@ -693,7 +661,6 @@ def prtStraightTrack(pillar):
     glTranslatef(2.5, 0, 0)
 
     glColor3f(0.5, 0.5, 0.5)
-    #setMaterial(0.5, 0.5, 0.5)
     if(pillar):
         glPushMatrix()
         glTranslatef(-5, -8, 0)
@@ -741,14 +708,12 @@ def prtLight():
     glPushMatrix()
 
     glColor3f(0.8, 0.8, 0.8)
-    #setMaterial(0.8, 0.8, 0.8)
 
     glRotatef(90, 1, 0, 0)
     quadric = gluNewQuadric()
     gluCylinder(quadric, 0.2, 0.2, 5, 20, 1)
 
     glColor3f(0.6, 0.6, 0.6)
-    #setMaterial(0.6, 0.6, 0.6)
 
     glTranslatef(0.5, 0, 0)
     cube(2, 1, 0.2)
@@ -867,22 +832,6 @@ def draw_prt():
             glTranslatef(position-67.5-round(turns)*0.306, 0, -0.016*(position-67.5-round(turns)*0.306))
         
         glTranslatef(max(0, min(position-78.5, 34.5)), 0, 0)
-
-        '''turns = max(0, min((position - 40)/0.153, 36))
-        for i in range(round(turns)):
-            glRotatef(-2.5, 0, 1, 0)
-            glTranslatef(0.153, 0, -0.01)
-        if position > 40 and position < 45.5:
-            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
-        
-        '''turns = max(0, min((position - 21)/0.306, 36))
-        for i in range(round(turns)):
-            glRotatef(2.5, 0, 1, 0)
-            glTranslatef(0.306, 0, -0.005)
-        if position > 21 and position < 32:
-            glTranslatef(position-21-round(turns)*0.306, 0, -0.016*(position-21-round(turns)*0.306))
-        
-        glTranslatef(max(0, min(position-32, 4)), 0, 0)'''
  
         prtCar()
         glPopMatrix()
@@ -1451,42 +1400,42 @@ def draw_tunnel():
 
     glColor3f(0.5, 0.2, 0.2)  # Brick red color
     glBegin(GL_QUADS)
-
+    glNormal3f(0, 0, 1)
     # Front face
     glNormal3f(0, 0, 1)  # Normal facing forward
     glVertex3f(*blf)
     glVertex3f(*brf)
     glVertex3f(*trf)
     glVertex3f(*tlf)
-
+    glNormal3f(0, 0, -1)
     # Back face
     glNormal3f(0, 0, -1)  # Normal facing backward
     glVertex3f(*blb)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*tlb)
-
+    glNormal3f(-1, 0, 0)
     # Left face
     glNormal3f(-1, 0, 0)  # Normal facing left
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*tlb)
     glVertex3f(*tlf)
-
+    glNormal3f(1, 0, 0)
     # Right face
     glNormal3f(1, 0, 0)  # Normal facing right
     glVertex3f(*brf)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-
+    glNormal3f(0, 1, 0)
     # Top face
     glNormal3f(0, 1, 0)  # Normal facing up
     glVertex3f(*tlf)
     glVertex3f(*tlb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-
+    glNormal3f(0, -1, 0)
     # Bottom face
     glNormal3f(0, -1, 0)  # Normal facing down
     glVertex3f(*blf)
@@ -1594,7 +1543,7 @@ class Human:
     def stop_waving(self):
         self.is_waving = False
 
-def lerp(t, a, b):
+def lerpg(t, a, b):
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 
 def draw_human(human, human_body_model, human_arm_model):
@@ -1743,6 +1692,7 @@ def update_day_night_cycle():
 
         glClearColor(*background_color)
 
+
 def main():
     global timeVar
     global is_day, transition_in_progress, transition_start_time, current_light_position, background_color
@@ -1780,21 +1730,40 @@ def main():
 
     # Human and car state
     human = Human()
-    cars = []
+    cars : List[Car] = []
 
     # Load Models
+    houseObjects = [[Model.load("Resources/furniture.obj", "Resources/brown.png"), Model.load("Resources/doors.obj", "Resources/door.png"), Model.load("Resources/walls.obj", x[0]), Model.load("Resources/roof.obj", x[1])] for x in [("Resources/brick.png", "Resources/roof.png"), ("Resources/brick1.png", "Resources/roof1.png"), ("Resources/brick2.png", "Resources/roof2.png")]]
+    for lists in houseObjects:
+        for models in lists:
+            models.send_texture(1024)
+            models.unbind_texture()
     car_model = Model.load("Resources/car.obj", "Resources/Car.png")
-    car_model.send_texture()
+    car_model.send_texture(1024)
     car_model.unbind_texture()
+    car_dl = glGenLists(1)
+    glNewList(car_dl, GL_COMPILE)
+    draw_model(car_model)
+    glEndList()
     human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png")
-    human_body_model.send_texture()
+    human_body_model.send_texture(1024)
     human_body_model.unbind_texture()
     human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png")
-    human_arm_model.send_texture()
+    human_arm_model.send_texture(1024)
     human_arm_model.unbind_texture()
 
-    global houseObjects
-    houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
+    scene_dl = glGenLists(1)
+    glNewList(scene_dl, GL_COMPILE)
+    draw_tunnel()
+    draw_ground()
+    draw_road()
+    draw_water()
+    draw_background()
+    draw_trees()
+    draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
+    draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
+    draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
+    glEndList()
 
     while True:
         # PRT position updates
@@ -1836,6 +1805,8 @@ def main():
                         transition_in_progress = True
                         transition_start_time = pygame.time.get_ticks()
                         is_day = not is_day  # Toggle between day and night
+                elif event.key == K_k:
+                    cars.append(Car(timeVar, [0, 0, 0], [15, 15, 15]))
 
         camera_controls()  # Update camera based on user input
 
@@ -1850,14 +1821,16 @@ def main():
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
         # Draw scene
-        draw_tunnel()
-        draw_ground()
-        draw_road()
-        draw_water()
-        draw_background()
         draw_prt()
-        draw_trees()
+        glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
+        for car in cars:
+            t = (timeVar - car.start_time) / car.time_to_finished
+            if t >= car.time_to_finished:
+                cars.remove(car)
+                continue
+            pos = lerpg(t, car.pos, car.dest)
+            draw_at(lambda: glCallList(car_dl), *pos)
 
         glPushMatrix()
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
@@ -1867,9 +1840,7 @@ def main():
         draw_dome(30, 50, 20, offset=25)
         glPopMatrix()
 
-        draw_house_at((30,0,0), False, (.5,.5,.5))
-
-        pygame.display.flip()  # Swap buffers
+        pygame.display.flip()  # Swap buffers0
         pygame.time.wait(10)  # Small delay to control camera speed
         timeVar += 10
 
