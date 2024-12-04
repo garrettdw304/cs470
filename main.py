@@ -35,6 +35,13 @@ class Material:
         glMaterial(GL_FRONT, GL_SHININESS, [self.specular_exponent])
         glMaterial(GL_FRONT, GL_EMISSION, self.emissive_material)
 
+    def unbind(self):
+        glMaterial(GL_FRONT, GL_SPECULAR, Model.default_material.specular_reflection)
+        glMaterial(GL_FRONT, GL_AMBIENT, Model.default_material.ambient_reflection)
+        glMaterial(GL_FRONT, GL_DIFFUSE, Model.default_material.diffused_reflection)
+        glMaterial(GL_FRONT, GL_SHININESS, [Model.default_material.specular_exponent])
+        glMaterial(GL_FRONT, GL_EMISSION, Model.default_material.emissive_material)
+
     @staticmethod
     def load(mtl_file):
         specular_exponent = 1
@@ -181,6 +188,7 @@ def draw_model(model : Model):
         glEnd()
     if model.texture is not None:
         model.unbind_texture()
+    model.material.unbind()
 
 def cube(xSize, ySize, zSize):
     glBegin(GL_POLYGON)
@@ -1302,6 +1310,12 @@ def main():
     global position2
     position2 = 3
     speed2 = 0
+
+    Model.default_material.specular_reflection = glGetMaterialfv(GL_FRONT, GL_SPECULAR)
+    Model.default_material.ambient_reflection = glGetMaterialfv(GL_FRONT, GL_AMBIENT)
+    Model.default_material.diffused_reflection = glGetMaterialfv(GL_FRONT, GL_DIFFUSE)
+    Model.default_material.specular_exponent = glGetMaterialfv(GL_FRONT, GL_SHININESS)
+    Model.default_material.emissive_material = glGetMaterialfv(GL_FRONT, GL_EMISSION)
 
     while True:
         #prt position
