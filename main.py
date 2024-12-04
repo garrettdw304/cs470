@@ -1763,6 +1763,13 @@ def main():
     draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
     draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
     draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
+    glPushMatrix()
+    glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
+    # Draw the coliseum components
+    draw_cylinder(30, 50, 25, offset=0)
+    draw_coliseum_walls(30, 50, 25)
+    draw_dome(30, 50, 20, offset=25)
+    glPopMatrix()
     glEndList()
 
     while True:
@@ -1831,14 +1838,6 @@ def main():
                 continue
             pos = lerpg(t, car.pos, car.dest)
             draw_at(lambda: glCallList(car_dl), *pos)
-
-        glPushMatrix()
-        glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
-        # Draw the coliseum components
-        draw_cylinder(30, 50, 25, offset=0)
-        draw_coliseum_walls(30, 50, 25)
-        draw_dome(30, 50, 20, offset=25)
-        glPopMatrix()
 
         pygame.display.flip()  # Swap buffers0
         pygame.time.wait(10)  # Small delay to control camera speed
