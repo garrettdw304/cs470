@@ -781,7 +781,6 @@ def draw_prt():
         glPushMatrix()
 
         glTranslatef(min(position, 33), 0, 0)
-        print(position)
         turns = max(0, min((position - 33)/0.306, 36))
         for i in range(round(turns)):
             glRotatef(2.5, 0, 1, 0)
@@ -1350,7 +1349,7 @@ def main():
         if position > 112:
             position = 0
             speed = 0
-        if position2 > 112:
+        if position2 > 110:
             position2 = 0
             speed2 = 0
 
