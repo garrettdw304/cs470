@@ -11,13 +11,13 @@ from PIL import Image
 
 global timeVar; timeVar = 0  # Time since the beginning of the program
 
-def draw_house_at(position, rotate, scale):
-    for object in houseObjects:
+def draw_house_at(models, position, rotate, scale):
+    for object in models:
         glPushMatrix()
         glTranslate(*position)
         glScale(*scale)
         if rotate:
-            glRotate(180, 0, 0)
+            glRotate(180, 0, 1, 0)
         draw_model(object)
         glPopMatrix()
 
@@ -122,7 +122,7 @@ class Model:
 
     # Sends the texture to the GPU and stores the texture id into texture_id. Throws if texture_id is not -1.
     # When leaving this method, the currently bound texture is this texture
-    def send_texture(self):
+    def send_texture(self, resolution):
         if self.texture_id != -1: raise Exception("Texture is already in GPU.")
         if self.texture is None: raise Exception("Cannot send a texture if there is not one to send.")
         self.texture_id = glGenTextures(1)
@@ -131,7 +131,7 @@ class Model:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, self.texture) # TODO: 1024 magic number
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, resolution, resolution, 0, GL_RGB, GL_UNSIGNED_BYTE, self.texture) # TODO: 1024 magic number
 
     def clear_texture(self):
         if self.texture_id == -1: raise Exception("Texture is not loaded into GPU.")
@@ -1425,37 +1425,37 @@ def draw_tunnel():
 
     glColor3f(0.5, 0.2, 0.2)  # Brick red color
     glBegin(GL_QUADS)
-
+    glNormal3f(0, 0, 1)
     # Front face
     glVertex3f(*blf)
     glVertex3f(*brf)
     glVertex3f(*trf)
     glVertex3f(*tlf)
-
+    glNormal3f(0, 0, -1)
     # Back face
     glVertex3f(*blb)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*tlb)
-
+    glNormal3f(-1, 0, 0)
     # Left face
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*tlb)
     glVertex3f(*tlf)
-
+    glNormal3f(1, 0, 0)
     # Right face
     glVertex3f(*brf)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-
+    glNormal3f(0, 1, 0)
     # Top face
     glVertex3f(*tlf)
     glVertex3f(*tlb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-
+    glNormal3f(0, -1, 0)
     # Bottom face
     glVertex3f(*blf)
     glVertex3f(*blb)
@@ -1677,12 +1677,16 @@ def main():
     cars = []
 
     # Load Models
-    car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
-    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
-    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
+    car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(1024); car_model.unbind_texture()
+    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(1024); human_body_model.unbind_texture()
+    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(1024); human_arm_model.unbind_texture()
 
-    global houseObjects
-    houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
+    
+    houseObjects = [[Model.load("Resources/furniture.obj", "Resources/brown.png"), Model.load("Resources/doors.obj", "Resources/door.png"), Model.load("Resources/walls.obj", x[0]), Model.load("Resources/roof.obj", x[1])] for x in [("Resources/brick.png", "Resources/roof.png"), ("Resources/brick1.png", "Resources/roof1.png"), ("Resources/brick2.png", "Resources/roof2.png")]]
+    for lists in houseObjects:
+        for models in lists:
+            models.send_texture(1024)
+            models.unbind_texture()
 
     while True:
         #prt position
@@ -1733,14 +1737,16 @@ def main():
         draw_prt()
         draw_trees()
         draw_human(human, human_body_model, human_arm_model)
-    
+        
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
         # Draw the coliseum components
         draw_cylinder(30, 50, 25, offset=0)
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
 
-        draw_house_at((30,0,0), False, (.5,.5,.5))
+        draw_house_at(houseObjects[0], (30,0,0), False, (.5,.5,.5))
+        draw_house_at(houseObjects[1], (30,0,80), False, (.5,.5,.5))
+        draw_house_at(houseObjects[2], (86,0,35), True, (.6,.6,.6))
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
