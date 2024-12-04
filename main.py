@@ -1288,7 +1288,7 @@ def main():
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
-    coliseum_position = [75, 0, 75]  # [x, y, z] coordinates for the coliseum
+    coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
     #prt position variables
     previousTime = time.time()
