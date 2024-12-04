@@ -1566,17 +1566,26 @@ def lerpg(t, a, b):
     return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
 
 def draw_human(human, human_body_model, human_arm_model):
+    glPushMatrix()
+    glTranslate(0, 0, 10)
+    glRotate(180, 0, 1, 0)
     global timeVar
+    wave_speed = 4
+    glScale(1.75, 1.75, 1.75)
     if human.is_waving:
+        rot = (timeVar - human.started_waving)
+        if rot > 180:
+            rot = 180
+        glRotate(rot, 0, 1, 0)
         glPushMatrix()
         glTranslate(-0.24308, 1.3941, 0)
-        wave_speed = 2
         glRotate(math.fabs(math.sin((timeVar - human.started_waving) / 1000 * wave_speed)) * -180, 0, 0, 1)
         draw_model(human_arm_model)
         glPopMatrix()
     else:
         draw_at(lambda: draw_model(human_arm_model), -0.24308, 1.3941, 0)
     draw_model(human_body_model)
+    glPopMatrix()
 
 def draw_background():
     """Draws many pyramids to create a mountain range."""
