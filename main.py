@@ -718,6 +718,5 @@ def main():
 
         pygame.display.flip()  # swap buffers
         pygame.time.wait(10)  # small delay to control camera speed
-
-        
+  
 main()
