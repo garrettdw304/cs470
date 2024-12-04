@@ -9,7 +9,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from PIL import Image
 
-global timeVar  # Time since the beginning of the program
+global timeVar; timeVar = 0  # Time since the beginning of the program
 
 def load_texture(image_path):
     """Loads a texture from an image file and returns the texture ID."""
@@ -130,11 +130,14 @@ class Model:
 
     def bind_texture(self):
         if self.texture_id == -1: raise Exception("Texture is not loaded into GPU.")
+        glEnable(GL_TEXTURE_2D)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
 
     def unbind_texture(self):
         if self.texture_id == -1: raise Exception("Texture cannot be bound if it is not loaded into GPU...")
         glBindTexture(GL_TEXTURE_2D, 0)
+        glDisable(GL_TEXTURE_2D)
+
 
     @staticmethod
     def load(obj_file, texture_file = None):
@@ -1296,6 +1299,41 @@ def draw_pyramid(base_size, height, position, color):
     glVertex3f(x - half_base, y, z + half_base)
     glEnd()
 
+class Car:
+    time_to_finished = 5000
+    start_time = 0
+    pos = [0, 0, 0]
+    dest = [0, 0, 0]
+    def __init__(self, start_time, start_position, destination):
+        self.pos = start_position
+        self.dest = destination
+        self.start_time = start_time
+
+class Human:
+    started_waving = 0
+    is_waving = False
+    def start_waving(self, cur_time):
+        self.is_waving = True
+        self.started_waving = cur_time
+    def stop_waving(self):
+        self.is_waving = False
+
+def lerp(t, a, b):
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+
+def draw_human(human, human_body_model, human_arm_model):
+    global timeVar
+    if human.is_waving:
+        glPushMatrix()
+        glTranslate(-0.24308, 1.3941, 0)
+        wave_speed = 2
+        glRotate(math.fabs(math.sin((timeVar - human.started_waving) / 1000 * wave_speed)) * -180, 0, 0, 1)
+        draw_model(human_arm_model)
+        glPopMatrix()
+    else:
+        draw_at(lambda: draw_model(human_arm_model), -0.24308, 1.3941, 0)
+    draw_model(human_body_model)
+
 def draw_background():
     """Draws many pyramids to create a mountain range."""
     pyramids = [
@@ -1358,10 +1396,13 @@ def apply_camera():
     glRotatef(camera_rotation[1], 0, 1, 0)
 
 def main():
+    global timeVar
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
+    glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_POSITION, [1, 15, 1, 1])
 
     global ground_texture_id
     ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
@@ -1386,6 +1427,10 @@ def main():
     Model.default_material.diffused_reflection = glGetMaterialfv(GL_FRONT, GL_DIFFUSE)
     Model.default_material.specular_exponent = glGetMaterialfv(GL_FRONT, GL_SHININESS)
     Model.default_material.emissive_material = glGetMaterialfv(GL_FRONT, GL_EMISSION)
+
+    # Human and car state
+    human = Human()
+    cars = []
 
     # Load Models
     car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
@@ -1422,6 +1467,9 @@ def main():
             elif event.type == KEYDOWN:
                 if event.key == K_p:
                     acceleration = -acceleration #stop prt cars
+                elif event.key == K_h:
+                    if human.is_waving: human.stop_waving()
+                    else: human.start_waving(timeVar)
 
         camera_controls()  # Update camera based on user input
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear screen and depth buffer
@@ -1436,7 +1484,8 @@ def main():
         draw_water()
         draw_background()
         draw_prt()
-        
+        draw_human(human, human_body_model, human_arm_model)
+    
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
         # Draw the coliseum components
         draw_cylinder(30, 50, 25, offset=0)
@@ -1445,5 +1494,6 @@ def main():
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
+        timeVar += 10
 
 main()
