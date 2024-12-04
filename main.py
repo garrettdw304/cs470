@@ -1760,6 +1760,9 @@ def main():
     draw_water()
     draw_background()
     draw_trees()
+    draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
+    draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
+    draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
     glEndList()
 
     while True:
@@ -1836,10 +1839,6 @@ def main():
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
         glPopMatrix()
-
-        draw_house_at(houseObjects[0], (-25,0,-15), False, (.5,.5,.5))
-        draw_house_at(houseObjects[1], (-25,0,65), False, (.5,.5,.5))
-        draw_house_at(houseObjects[2], (31,0,20), True, (.6,.6,.6))
 
         pygame.display.flip()  # Swap buffers0
         pygame.time.wait(10)  # Small delay to control camera speed
