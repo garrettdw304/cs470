@@ -1525,14 +1525,9 @@ def draw_pyramid(base_size, height, position, color):
     glEnd()
 
 class Car:
-    time_to_finished = 5000
-    start_time = 0
     pos = [0, 0, 0]
-    dest = [0, 0, 0]
-    def __init__(self, start_time, start_position, destination):
+    def __init__(self, start_position):
         self.pos = start_position
-        self.dest = destination
-        self.start_time = start_time
 
 class Human:
     started_waving = 0
@@ -1743,7 +1738,10 @@ def main():
     car_model.unbind_texture()
     car_dl = glGenLists(1)
     glNewList(car_dl, GL_COMPILE)
+    glPushMatrix()
+    glRotate(-90, 0, 1, 0)
     draw_model(car_model)
+    glPopMatrix()
     glEndList()
     human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png")
     human_body_model.send_texture(1024)
@@ -1813,7 +1811,7 @@ def main():
                         transition_start_time = pygame.time.get_ticks()
                         is_day = not is_day  # Toggle between day and night
                 elif event.key == K_k:
-                    cars.append(Car(timeVar, [0, 0, 0], [15, 15, 15]))
+                    cars.append(Car([0, 0, -50]))
 
         camera_controls()  # Update camera based on user input
 
@@ -1832,12 +1830,12 @@ def main():
         glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
         for car in cars:
-            t = (timeVar - car.start_time) / car.time_to_finished
-            if t >= car.time_to_finished:
+            car.pos = [car.pos[0], car.pos[1], car.pos[2] + delta * 10]
+            print(car.pos[2])
+            if car.pos[2] > 150:
                 cars.remove(car)
                 continue
-            pos = lerpg(t, car.pos, car.dest)
-            draw_at(lambda: glCallList(car_dl), *pos)
+            draw_at(lambda: glCallList(car_dl), *car.pos)
 
         pygame.display.flip()  # Swap buffers0
         pygame.time.wait(10)  # Small delay to control camera speed
