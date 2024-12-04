@@ -1639,6 +1639,12 @@ def apply_camera():
     glRotatef(camera_rotation[0], 1, 0, 0)
     glRotatef(camera_rotation[1], 0, 1, 0)
 
+def setMaterial(r, g, b):
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
+
 def main():
     global timeVar
     pygame.init()
