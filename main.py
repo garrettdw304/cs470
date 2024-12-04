@@ -1,22 +1,46 @@
+from dataclasses import dataclass
+from typing import List, Sequence
 import pygame
 import math
-import OpenGL
+import time
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from PIL import Image
-import pywavefront
 
-global time  # time since beginning of program in ms
-"""
+global timeVar  # Time since the beginning of the program
+
+def load_texture(image_path):
+    """Loads a texture from an image file and returns the texture ID."""
+    # Generate a texture ID
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+
+    # Load the image using PIL
+    image = Image.open(image_path)
+    image = image.transpose(Image.FLIP_TOP_BOTTOM)  # Flip the image vertically
+    img_data = image.convert("RGB").tobytes()
+
+    # Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)  # Repeat texture horizontally
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)  # Repeat texture vertically
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)  # Linear filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+    # Upload the texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height,
+                 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
+
+    return texture_id
+
 def draw_at(draw_func, posx, posy, posz):
     glPushMatrix()
     glTranslate(posx, posy, posz)
     draw_func()
     glPopMatrix()
 
-
+@dataclass
 class Material:
     specular_exponent : float # Ns
     ambient_reflection : List[float] # Ka
@@ -76,13 +100,14 @@ class Model:
     # From mtl file
     material : Material
     # From .png or similar file
-    texture : Sequence[int]
+    texture : Sequence[int] or None
     texture_id : int # The texture index of where the texture is stored at on the gpu. If not yet passed to gpu, -1.
 
     # Sends the texture to the GPU and stores the texture id into texture_id. Throws if texture_id is not -1.
     # When leaving this method, the currently bound texture is this texture
     def send_texture(self):
         if self.texture_id != -1: raise Exception("Texture is already in GPU.")
+        if self.texture is None: raise Exception("Cannot send a texture if there is not one to send.")
         self.texture_id = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -105,7 +130,7 @@ class Model:
         glBindTexture(GL_TEXTURE_2D, 0)
 
     @staticmethod
-    def load(obj_file, texture_file):
+    def load(obj_file, texture_file = None):
         vertices = []
         normals = []
         uvs = []
@@ -143,12 +168,14 @@ class Model:
                     faces.append(face)
                 else:
                     print("Cannot parse line of obj file: " + line)
-        texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
+        texture = None
+        if texture_file is not None:
+            texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Model(vertices, normals, uvs, faces, material, texture, -1)
 
-
 def draw_model(model : Model):
-    model.bind_texture()
+    if model.texture is not None:
+        model.bind_texture()
     model.material.bind()
     length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
     for face in model.faces:
@@ -170,32 +197,696 @@ def draw_model(model : Model):
 
         for indices in face:  # Each 'indices' contains 3 vertex indices: 0 -> mesh vertex index, 1 -> texture vertex index, 2 -> normal vertex index
             glNormal3fv(model.normals[indices[2]])
-            glTexCoord2fv(model.uvs[indices[1]])
+            if model.texture is not None:
+                glTexCoord2fv(model.uvs[indices[1]])
             glVertex3fv(model.vertices[indices[0]])
     if length != -1:
         glEnd()
-    model.unbind_texture()
-"""
-def draw_garage_house(size, position):
-    x, y, z = position
+    if model.texture is not None:
+        model.unbind_texture()
 
-def draw_house(sizeMod, position, rotate):
-    scene = pywavefront.Wavefront("allTest.obj", collect_faces=True)
+def cube(xSize, ySize, zSize):
+    glBegin(GL_POLYGON)
+    glVertex3f(-xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(xSize/2, -ySize/2, zSize/2)
+    glVertex3f(-xSize/2, -ySize/2, zSize/2)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-xSize/2, ySize/2, -zSize/2)
+    glVertex3f(xSize/2, ySize/2, -zSize/2)
+    glVertex3f(xSize/2, ySize/2, zSize/2)
+    glVertex3f(-xSize/2, ySize/2, zSize/2)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-xSize/2, ySize/2, -zSize/2)
+    glVertex3f(-xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(-xSize/2, -ySize/2, zSize/2)
+    glVertex3f(-xSize/2, ySize/2, zSize/2)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(xSize/2, ySize/2, -zSize/2)
+    glVertex3f(xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(xSize/2, -ySize/2, zSize/2)
+    glVertex3f(xSize/2, ySize/2, zSize/2)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(xSize/2, -ySize/2, -zSize/2)
+    glVertex3f(xSize/2, ySize/2, -zSize/2)
+    glVertex3f(-xSize/2, ySize/2, -zSize/2)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-xSize/2, -ySize/2, zSize/2)
+    glVertex3f(xSize/2, -ySize/2, zSize/2)
+    glVertex3f(xSize/2, ySize/2, zSize/2)
+    glVertex3f(-xSize/2, ySize/2, zSize/2)
+    glEnd()
+
+def prtCar():
+    glTranslatef(0, 0, 0.5)
+
+    glColor3f(1.0, 1.0, 0)
+    #setMaterial(1.0, 1.0, 0)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.5, 0, 0)
+    glVertex3f(-0.7, 0.2, 0)
+    glVertex3f(0.7, 0.2, 0)
+    glVertex3f(0.5, 0, 0)
+    glEnd()
+
+    glColor3f(0, 0, 1.0)
+    #setMaterial(0, 0, 1.0)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-1, 0.2, 0)
+    glVertex3f(-0.95, 0.8, 0)
+    glVertex3f(0.95, 0.8, 0)
+    glVertex3f(1, 0.2, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.95, 0.8, 0)
+    glVertex3f(-0.9, 1.4, 0)
+    glVertex3f(-0.85, 1.4, 0)
+    glVertex3f(-0.9, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.95, 0.8, 0)
+    glVertex3f(0.9, 1.4, 0)
+    glVertex3f(0.85, 1.4, 0)
+    glVertex3f(0.9, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.85, 1.4, 0)
+    glVertex3f(-0.855, 1.35, 0)
+    glVertex3f(0.855, 1.35, 0)
+    glVertex3f(0.85, 1.4, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.4, 1.4, 0)
+    glVertex3f(-0.5, 1.4, 0)
+    glVertex3f(-0.5, 0.8, 0)
+    glVertex3f(-0.4, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0, 1.4, 0)
+    glVertex3f(0.5, 1.4, 0)
+    glVertex3f(0.5, 0.8, 0)
+    glVertex3f(0, 0.8, 0)
+    glEnd()
+
+    glTranslatef(0, 0, -1)
+
+    glColor3f(1.0, 1.0, 0)
+    #setMaterial(1.0, 1.0, 0)
+    
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.5, 0, 0)
+    glVertex3f(-0.7, 0.2, 0)
+    glVertex3f(0.7, 0.2, 0)
+    glVertex3f(0.5, 0, 0)
+    glEnd()
+
+    glColor3f(0, 0, 1.0)
+    #setMaterial(0, 0, 1.0)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-1, 0.2, 0)
+    glVertex3f(-0.95, 0.8, 0)
+    glVertex3f(0.95, 0.8, 0)
+    glVertex3f(1, 0.2, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.95, 0.8, 0)
+    glVertex3f(-0.9, 1.4, 0)
+    glVertex3f(-0.85, 1.4, 0)
+    glVertex3f(-0.9, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.95, 0.8, 0)
+    glVertex3f(0.9, 1.4, 0)
+    glVertex3f(0.85, 1.4, 0)
+    glVertex3f(0.9, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.85, 1.4, 0)
+    glVertex3f(-0.855, 1.35, 0)
+    glVertex3f(0.855, 1.35, 0)
+    glVertex3f(0.85, 1.4, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.4, 1.4, 0)
+    glVertex3f(-0.5, 1.4, 0)
+    glVertex3f(-0.5, 0.8, 0)
+    glVertex3f(-0.4, 0.8, 0)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0, 1.4, 0)
+    glVertex3f(0.5, 1.4, 0)
+    glVertex3f(0.5, 0.8, 0)
+    glVertex3f(0, 0.8, 0)
+    glEnd()
+
+    glColor3f(1, 1, 0)
+    #setMaterial(1, 1, 0)
+    glBegin(GL_POLYGON)
+    glVertex3f(0.9, 1.4, 0)
+    glVertex3f(0.91, 1.3, 0)
+    glVertex3f(0.91, 1.3, 1)
+    glVertex3f(0.9, 1.4, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.91, 1.3, 0)
+    glVertex3f(0.96, 0.7, 0)
+    glVertex3f(0.96, 0.7, 0.05)
+    glVertex3f(0.91, 1.3, 0.05)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.91, 1.3, 1)
+    glVertex3f(0.96, 0.7, 1)
+    glVertex3f(0.96, 0.7, 0.95)
+    glVertex3f(0.91, 1.3, 0.95)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.96, 0.7, 0)
+    glVertex3f(1, 0.2, 0)
+    glVertex3f(1, 0.2, 1)
+    glVertex3f(0.96, 0.7, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.9, 1.4, 0)
+    glVertex3f(-0.91, 1.3, 0)
+    glVertex3f(-0.91, 1.3, 1)
+    glVertex3f(-0.9, 1.4, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.91, 1.3, 0)
+    glVertex3f(-0.96, 0.7, 0)
+    glVertex3f(-0.96, 0.7, 0.05)
+    glVertex3f(-0.91, 1.3, 0.05)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.91, 1.3, 1)
+    glVertex3f(-0.96, 0.7, 1)
+    glVertex3f(-0.96, 0.7, 0.95)
+    glVertex3f(-0.91, 1.3, 0.95)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.96, 0.7, 0)
+    glVertex3f(-1, 0.2, 0)
+    glVertex3f(-1, 0.2, 1)
+    glVertex3f(-0.96, 0.7, 1)
+    glEnd()
+
+    glColor3f(0.3, 0.3, 0.3)
+    #setMaterial(0.3, 0.3, 0.3)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.5, 0, 0)
+    glVertex3f(0.5, 0, 0)
+    glVertex3f(0.5, 0, 1)
+    glVertex3f(-0.5, 0, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.5, 0, 0)
+    glVertex3f(-0.7, 0.2, 0)
+    glVertex3f(-0.7, 0.2, 1)
+    glVertex3f(-0.5, 0, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-0.7, 0.2, 0)
+    glVertex3f(-1, 0.2, 0)
+    glVertex3f(-1, 0.2, 1)
+    glVertex3f(-0.7, 0.2, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.5, 0, 0)
+    glVertex3f(0.7, 0.2, 0)
+    glVertex3f(0.7, 0.2, 1)
+    glVertex3f(0.5, 0, 1)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.7, 0.2, 0)
+    glVertex3f(1, 0.2, 0)
+    glVertex3f(1, 0.2, 1)
+    glVertex3f(0.7, 0.2, 1)
+    glEnd()
+
+    glColor3f(1, 1, 0.8)
+    #setMaterial(1.0, 1.0, 0.8)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(1, 0.21, 0)
+    glVertex3f(-1, 0.21, 0)
+    glVertex3f(-1, 0.21, 1)
+    glVertex3f(1, 0.21, 1)
+    glEnd()
+
+    glColor3f(1, 1, 0)
+    #setMaterial(1.0, 1.0, 0)
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0.9, 1.4, 0)
+    glVertex3f(-0.9, 1.4, 0)
+    glVertex3f(-0.9, 1.4, 1)
+    glVertex3f(0.9, 1.4, 1)
+    glEnd()
+
+    glColor3f(0.6, 0.6, 0.6)
+    #setMaterial(0.6, 0.6, 0.6)
+
     glPushMatrix()
-    glScalef(*sizeMod)
-    if rotate:
-        glRotatef(180, 0, 1, 0)
-    glTranslatef(*position)
-    for mesh in scene.mesh_list:
-        glBegin(GL_TRIANGLES)
-        for face in mesh.faces:
-            for vertex_i in face:
-                glVertex3f(*scene.vertices[vertex_i])
-        glEnd()
-    
+
+    glRotatef(90, 1, 0, 0)
+    glTranslatef(0.25, 0.75, -1.4)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.05, 0.05, 1.2, 20, 1)
+
+    glTranslatef(0, -0.5, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.05, 0.05, 1.2, 20, 1)
+
+    glTranslatef(-0.5, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.05, 0.05, 1.2, 20, 1)
+
+    glTranslatef(0, 0.5, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.05, 0.05, 1.2, 20, 1)
+
     glPopMatrix()
+
+    glPushMatrix()
+
+    glColor3f(0.1, 0.1, 0.1)
+    #setMaterial(0.1, 0.1, 0.1)
+
+    glTranslatef(0.8, -0.02, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.075, 0.075, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluDisk(quadric, 0.075, 0.2, 20, 1)
+
+    glTranslatef(-1.6, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.075, 0.075, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluDisk(quadric, 0.075, 0.2, 20, 1)
+
+    glTranslatef(0, 0, 0.8)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.075, 0.075, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluDisk(quadric, 0.075, 0.2, 20, 1)
+
+    glTranslatef(1.6, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.075, 0.075, 0.2, 20, 1)
+    quadric = gluNewQuadric()
+    gluDisk(quadric, 0.075, 0.2, 20, 1)
+
+    glPopMatrix()
+
+    glPushMatrix()
+
+    glColor3f(0.2, 0.2, 0.2)
+    #setMaterial(0.2, 0.2, 0.2)
+
+    glTranslatef(-1.05, 0.1, 0.5)
+    cube(0.1, 0.2, 1)
+
+    glTranslatef(2.1, 0, 0)
+    cube(0.1, 0.2, 1)
+
+    glPopMatrix()
+
+def prtStraightTrack(pillar):
+    glPushMatrix()
+
+    glColor3f(0.6, 0.3, 0)
+    #setMaterial(0.6, 0.3, 0)
+
+    cube(10, 1, 10)
+
+    glColor3f(0.6, 0.4, 0)
+    #setMaterial(0.6, 0.4, 0)
+
+    glTranslatef(0, 0.6, 0)
+    cube(1, 0.2, 10)
+
+    glColor3f(0.5, 0.4, 0)
+    #setMaterial(0.5, 0.4, 0)
+
+    glTranslatef(0, 0.6, 0)
+    cube(0.4, 1, 10)
+
+    glColor3f(0.5, 0.5, 0)
+    #setMaterial(0.5, 0.5, 0)
+
+    glTranslatef(0, 0.6, 0)
+    cube(1, 0.2, 10)
+
+    glColor3f(0.7, 0.7, 0.7)
+    #setMaterial(0.7, 0.7, 0.7)
+
+    glTranslatef(0.35, -0.3, -5)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glTranslatef(0, -0.3, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glTranslatef(0, -0.3, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glTranslatef(-0.7, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glTranslatef(0, 0.3, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glTranslatef(0, 0.3, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.1, 0.1, 10, 20, 1)
+
+    glColor3f(0.4, 0.2, 0)
+    #setMaterial(0.4, 0.2, 0)
+
+    glTranslatef(5.25, -0.4, 5)
+    cube(0.2, 1.2, 10)
+
+    glColor3f(0.45, 0.4, 0)
+    #setMaterial(0.45, 0.4, 0)
+
+    glTranslatef(-0.25, 0, 0)
+    cube(0.3, 0.1, 10)
+
+    glColor3f(0.4, 0.35, 0.05)
+    #setMaterial(0.4, 0.35, 0.05)
+
+    glTranslatef(-0.2, 0, 0)
+    cube(0.1, 0.6, 10)
+
+    glColor3f(0.4, 0.2, 0)
+    #setMaterial(0.4, 0.2, 0)
+
+    glTranslatef(-9.35, 0, 0)
+    cube(0.2, 1.2, 10)
+
+    glColor3f(0.45, 0.4, 0)
+    #setMaterial(0.45, 0.4, 0)
+
+    glTranslatef(0.25, 0, 0)
+    cube(0.3, 0.1, 10)
+
+    glColor3f(0.4, 0.35, 0.05)
+    #setMaterial(0.4, 0.35, 0.05)
+
+    glTranslatef(0.2, 0, 0)
+    cube(0.1, 0.6, 10)
+
+    glColor3f(0.6, 0.4, 0)
+    #setMaterial(0.6, 0.4, 0)
+
+    glTranslatef(2, -0.6, 0)
+    cube(3, 0.01, 10)
+
+    glTranslatef(5, 0, 0)
+    cube(3, 0.01, 10)
+
+    glTranslatef(2.5, 0, 0)
+
+    glColor3f(0.5, 0.5, 0.5)
+    #setMaterial(0.5, 0.5, 0.5)
+    if(pillar):
+        glPushMatrix()
+        glTranslatef(-5, -8, 0)
+        cube(4, 8, 3)
+        glPopMatrix()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0, 1.2, 5)
+    glVertex3f(0, 1.2, -5)
+    glVertex3f(0, -2, -5)
+    glVertex3f(0, -2, 5)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(0, -2, -5)
+    glVertex3f(0, -2, 5)
+    glVertex3f(-3, -5, 5)
+    glVertex3f(-3, -5, -5)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-3, -5, -5)
+    glVertex3f(-3, -5, 5)
+    glVertex3f(-7, -5, 5)
+    glVertex3f(-7, -5, -5)
+    glEnd()
     
-    
+    glBegin(GL_POLYGON)
+    glVertex3f(-7, -5, -5)
+    glVertex3f(-7, -5, 5)
+    glVertex3f(-10.1, -2, 5)
+    glVertex3f(-10.1, -2, -5)
+    glEnd()
+
+    glBegin(GL_POLYGON)
+    glVertex3f(-10.1, 1.2, 5)
+    glVertex3f(-10.1, 1.2, -5)
+    glVertex3f(-10.1, -2, -5)
+    glVertex3f(-10.1, -2, 5)
+    glEnd()
+
+    glPopMatrix()
+
+def prtLight():
+    glPushMatrix()
+
+    glColor3f(0.8, 0.8, 0.8)
+    #setMaterial(0.8, 0.8, 0.8)
+
+    glRotatef(90, 1, 0, 0)
+    quadric = gluNewQuadric()
+    gluCylinder(quadric, 0.2, 0.2, 5, 20, 1)
+
+    glColor3f(0.6, 0.6, 0.6)
+    #setMaterial(0.6, 0.6, 0.6)
+
+    glTranslatef(0.5, 0, 0)
+    cube(2, 1, 0.2)
+
+    glPopMatrix()
+
+def draw_prt():
+        glPushMatrix()
+        glScale(1.2, 1.2, 1.2)
+        glRotatef(90, 0, 1, 0)
+        glTranslatef(-40, 10, 10)
+        prtStraightTrack(True)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+
+        glPushMatrix()
+        glTranslatef(0, 7, -5)
+        prtLight()
+        glTranslatef(0, 0, 13)
+        glRotatef(180, 0, 1, 0)
+        prtLight()
+        glPopMatrix()
+
+        glPushMatrix()
+        glTranslatef(0, 0, -6)
+        for i in range(1,19):
+            glScalef(1, 1, 0.333)
+            prtStraightTrack(False)
+            glScalef(1, 1, 3)
+            glRotatef(5, 0, 1, 0)
+            glTranslatef(0, 0, -1)
+        glTranslatef(0, 0, -5)
+        prtStraightTrack(True)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(True)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(True)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glPopMatrix()
+
+        glPushMatrix()
+        glTranslatef(0, 0, 16)
+        for i in range(1,19):
+            glScalef(1, 1, 0.333)
+            prtStraightTrack(False)
+            glScalef(1, 1, 3)
+            glRotatef(5, 0, 1, 0)
+            glTranslatef(0, 0, 1)
+        
+        glTranslatef(0, 0, 5)
+        prtStraightTrack(True)
+
+        glTranslatef(0, 0, 5)
+        for i in range(1,19):
+            glScalef(1, 1, 0.333)
+            prtStraightTrack(False)
+            glScalef(1, 1, 3)
+            glRotatef(-5, 0, 1, 0)
+            glTranslatef(0, 0, 1)
+        
+        glTranslatef(0, 0, 5)
+        prtStraightTrack(True)
+
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(True)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(True)
+
+        glPushMatrix()
+        glScalef(2, 2, 2)
+        glRotatef(90, 0, 1, 0)
+        glTranslatef(0, 0.5, 1.25)
+        glPushMatrix()
+
+        glTranslatef(min(position, 33), 0, 0)
+        turns = max(0, min((position - 33)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position > 33 and position < 44:
+            glTranslatef(position-33-round(turns)*0.306, 0, -0.016*(position-33-round(turns)*0.306))
+
+        glTranslatef(max(0, min(position-44, 5.75)), 0, 0)
+        
+        turns = max(0, min((position - 49.75)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position > 49.75 and position < 55.25:
+            glTranslatef(position-49.75-round(turns)*0.153, 0, 0.065*(position-49.75-round(turns)*0.153))
+        
+        glTranslatef(max(0, min(position-55.25, 12.25)), 0, 0)
+
+        turns = max(0, min((position - 67.5)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position > 67.5 and position < 78.5:
+            glTranslatef(position-67.5-round(turns)*0.306, 0, -0.016*(position-67.5-round(turns)*0.306))
+        
+        glTranslatef(max(0, min(position-78.5, 34.5)), 0, 0)
+
+        '''turns = max(0, min((position - 40)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position > 40 and position < 45.5:
+            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
+        
+        '''turns = max(0, min((position - 21)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position > 21 and position < 32:
+            glTranslatef(position-21-round(turns)*0.306, 0, -0.016*(position-21-round(turns)*0.306))
+        
+        glTranslatef(max(0, min(position-32, 4)), 0, 0)'''
+ 
+        prtCar()
+        glPopMatrix()
+
+        glRotatef(270, 0, 1, 0)
+        glTranslatef(-58, 0, -59.6)
+
+        glTranslatef(min(position2, 35), 0, 0)
+        turns = max(0, min((position2 - 35)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position2 > 35 and position2 < 40.5:
+            glTranslatef(position2-35-round(turns)*0.153, 0, -0.065*(position2-35-round(turns)*0.153))
+
+        glTranslatef(max(0, min(position2-40.5, 12)), 0, 0)
+
+        turns = max(0, min((position2 - 52.5)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position2 > 52.5 and position2 < 63.5:
+            glTranslatef(position2-52.5-round(turns)*0.306, 0, -0.016*(position2-52.5-round(turns)*0.306))
+        
+        glTranslatef(max(0, min(position2-63.5, 5.75)), 0, 0)
+
+        turns = max(0, min((position2 - 69.25)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position2 > 69.25 and position2 < 74.75:
+            glTranslatef(position2-69.25-round(turns)*0.153, 0, -0.065*(position2-69.25-round(turns)*0.153))
+
+        glTranslatef(max(0, min(position2-74.75, 37.25)), 0, 0)
+
+        prtCar()
+        glPopMatrix()
+
+        #prtStraightTrack(True)
+        glPopMatrix()
+        glPopMatrix()
 
 def draw_cylinder(radius, segments, height, offset=0):
     # Draw the bottom face
@@ -279,49 +970,46 @@ def draw_dome(radius, segments, rings, offset, height_scale=0.5):
         glEnd()
 
 def init_opengl():
-    """Initializes OpenGL settings and projection matrix"""
-    glEnable(GL_DEPTH_TEST)  # enable depth testing for 3D rendering
+    """Initializes OpenGL settings and projection matrix."""
+    glEnable(GL_DEPTH_TEST)  # Enable depth testing for 3D rendering
+    glEnable(GL_LIGHTING)    # Enable lighting
+    glEnable(GL_LIGHT0)      # Enable a default light source
+    glEnable(GL_COLOR_MATERIAL)  # Enable color material tracking
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+
+    glEnable(GL_NORMALIZE)  # Normalize normals for consistent lighting
     glMatrixMode(GL_PROJECTION)
-    gluPerspective(45, 800 / 600, 0.1, 1000)  # set up perspective projection
+    gluPerspective(45, 800 / 600, 0.1, 1000)  # Set up perspective projection
     glMatrixMode(GL_MODELVIEW)
-    glTranslatef(0, -1, -20)  # move scene slightly for better initial view
-    glClearColor(0.53, 0.81, 0.92, 1.0) # void color to light blue
+    glTranslatef(0, -1, -20)  # Move scene slightly for better initial view
+    glClearColor(0.53, 0.81, 0.92, 1.0)  # Set background color to light blue
 
-# currently not working, save for Wednesday
-def load_texture(image_path):
-    """Loads texture from an image file"""
-    texture = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, texture)
 
-    image = Image.open(image_path)
-    img_data = image.tobytes("raw", "RGB", 0, -1)
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width, image.height, 0, GL_RGB, GL_UNSIGNED_BYTE, img_data)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)  # repeat texture horizontally
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)  # repeat texture vertically
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-    return texture
 
 def draw_ground():
-    """Draws grassy ground plane"""
-    glColor3f(0.13, 0.55, 0.13)  # Grass green color
-    glBindTexture(GL_TEXTURE_2D, ground_texture)
+    """Draws the ground plane with a texture."""
+    glDisable(GL_LIGHTING)  # Disable lighting for the ground
+    glEnable(GL_TEXTURE_2D)  # Enable texture mapping
+    glBindTexture(GL_TEXTURE_2D, ground_texture_id)
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white to display texture colors accurately
+
     glBegin(GL_QUADS)
-    # define vertices with texture coordinates for the ground quad
-    glTexCoord2f(0, 0); glVertex3f(-150, -2, 150)
-    glTexCoord2f(1, 0); glVertex3f(150, -2, 150)
-    glTexCoord2f(1, 1); glVertex3f(150, -2, -150)
-    glTexCoord2f(0, 1); glVertex3f(-150, -2, -150)
+    # Repeat the texture 10 times across the ground
+    glTexCoord2f(0.0, 0.0); glVertex3f(-150, -2, 150)
+    glTexCoord2f(10.0, 0.0); glVertex3f(150, -2, 150)
+    glTexCoord2f(10.0, 10.0); glVertex3f(150, -2, -150)
+    glTexCoord2f(0.0, 10.0); glVertex3f(-150, -2, -150)
     glEnd()
 
-def draw_dotted_line_straight():
-    """Draws a dotted yellow line down the straight road"""
-    glEnable(GL_POLYGON_OFFSET_FILL) # prevents z-fighting
-    glColor3f(1.0, 1.0, 0.0)
+    glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
+    glEnable(GL_LIGHTING)     # Re-enable lighting if it was disabled
 
-    # line parameters
+def draw_dotted_line_straight():
+    """Draws a dotted yellow line down the straight road."""
+    glEnable(GL_POLYGON_OFFSET_FILL)  # Prevents Z-fighting
+    glColor3f(1.0, 1.0, 0.0)  # Yellow color for the line
+
+    # Line parameters
     dash_length = 10
     gap_length = 5
     line_width = 1
@@ -335,32 +1023,32 @@ def draw_dotted_line_straight():
         x_left = x_center - line_width
         x_right = x_center + line_width
         z0 = z
-        z1 = min(z + dash_length, z_end)  # ensure the dash doesn't exceed road length
+        z1 = min(z + dash_length, z_end)  # Ensure the dash doesn't exceed road length
 
-        # draw one dash as a quad
+        # Draw one dash as a quad
         glVertex3f(x_left, 0.02, z0)
         glVertex3f(x_right, 0.02, z0)
         glVertex3f(x_right, 0.02, z1)
         glVertex3f(x_left, 0.02, z1)
 
-        z += dash_length + gap_length  # move to the position of the next dash
+        z += dash_length + gap_length  # Move to the position of the next dash
     glEnd()
     glDisable(GL_POLYGON_OFFSET_FILL)
 
 def draw_dotted_line_diagonal():
-    """Draws a dotted yellow line down the diagonal road"""
-    glEnable(GL_POLYGON_OFFSET_FILL) # prevents z-fighting
+    """Draws a dotted yellow line down the diagonal road."""
+    glEnable(GL_POLYGON_OFFSET_FILL)  # Prevents Z-fighting
+    glColor3f(1.0, 1.0, 0.0)  # Yellow color for the line
 
-    glColor3f(1.0, 1.0, 0.0)
-    # line parameters
+    # Line parameters
     dash_length = 10
     gap_length = 5
     line_width = 1
     diagonal_length = 150
-    start_distance = 10  # distance from intersection to start drawing dashes
-    angle = math.radians(30)  # angle of diagonal road
+    start_distance = 10  # Distance from intersection to start drawing dashes
+    angle = math.radians(30)  # Angle of diagonal road
 
-    # calculate number of dashes
+    # Calculate number of dashes
     t_initial = start_distance
     num_dashes = int((diagonal_length - start_distance) / (dash_length + gap_length)) + 1
 
@@ -370,7 +1058,7 @@ def draw_dotted_line_diagonal():
     dx_perp = math.sin(angle)
     dz_perp = math.cos(angle)
 
-    x_start = 0  # starting point at intersection
+    x_start = 0  # Starting point at intersection
     z_start = 0
 
     glBegin(GL_QUADS)
@@ -378,34 +1066,33 @@ def draw_dotted_line_diagonal():
         t0 = t_initial + i * (dash_length + gap_length)
         t1 = t0 + dash_length
 
-        # adjust end of the last dash
+        # Adjust end of the last dash
         if t1 > diagonal_length:
             t1 = diagonal_length
 
-        # center positions of start and end of the dash
+        # Center positions of start and end of the dash
         x0_center = x_start + t0 * dx
         z0_center = z_start + t0 * dz
         x1_center = x_start + t1 * dx
         z1_center = z_start + t1 * dz
 
-        # offset for line width
+        # Offset for line width
         x_offset = line_width * dx_perp
         z_offset = line_width * dz_perp
         y_offset = 0.05  # Slightly above the road to avoid Z-fighting
 
-        # draw dash as a quad
+        # Draw dash as a quad
         glVertex3f(x0_center - x_offset, y_offset, z0_center - z_offset)
         glVertex3f(x0_center + x_offset, y_offset, z0_center + z_offset)
         glVertex3f(x1_center + x_offset, y_offset, z1_center + z_offset)
         glVertex3f(x1_center - x_offset, y_offset, z1_center - z_offset)
     glEnd()
-
     glDisable(GL_POLYGON_OFFSET_FILL)
 
 def draw_road():
     """Draws the straight and diagonal roads."""
-    # draw the straight road
-    glColor3f(0.2, 0.2, 0.2)
+    # Draw the straight road
+    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
     glVertex3f(-6, 0.01, -150)
     glVertex3f(6, 0.01, -150)
@@ -414,30 +1101,30 @@ def draw_road():
     glEnd()
     draw_dotted_line_straight()
 
-    # draw the diagonal road
+    # Draw the diagonal road
     diagonal_length = 150
     angle = math.radians(30)
     road_width = 12
 
-    # direction vector along diag road
+    # Direction vector along diagonal road
     dx = math.cos(angle)
     dz = -math.sin(angle)
 
-    # perpendicular vector for diag road width
+    # Perpendicular vector for road width
     dx_perp = math.sin(angle)
     dz_perp = math.cos(angle)
 
-    # width offsets
+    # Width offsets
     x_offset_width = (road_width / 2) * dx_perp
     z_offset_width = (road_width / 2) * dz_perp
 
-    # start and end points of diag road
+    # Start and end points of diagonal road
     x_start = 0
     z_start = 0
     x_end = x_start + diagonal_length * dx
     z_end = z_start + diagonal_length * dz
 
-    # define the edges of diag road
+    # Define the edges of the diagonal road
     x_start_left = x_start + x_offset_width
     z_start_left = z_start + z_offset_width
     x_start_right = x_start - x_offset_width
@@ -447,7 +1134,7 @@ def draw_road():
     x_end_right = x_end - x_offset_width
     z_end_right = z_end - z_offset_width
 
-    glColor3f(0.2, 0.2, 0.2)
+    glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
     glVertex3f(x_start_left, 0.01, z_start_left)
     glVertex3f(x_start_right, 0.01, z_start_right)
@@ -457,76 +1144,76 @@ def draw_road():
     draw_dotted_line_diagonal()
 
 def draw_tunnel():
-    """Draws a tunnel into the mountain"""
-    tunnel_width = 12  # match straight road width
+    """Draws a tunnel into the mountain."""
+    tunnel_width = 12  # Match straight road width
     tunnel_height = 15
-    tunnel_depth = 40  # length of tunnel into the mountain
+    tunnel_depth = 40
 
-    # position of the tunnel entrance
+    # Position of the tunnel entrance
     x_center = 0
     y_base = 0
     z_entrance = -50
 
-    # define vertices of the tunnel (just a simple rectangular prism)
+    # Define vertices of the tunnel (rectangular prism)
 
-    # front face (entrance)
-    blf = (x_center - tunnel_width/2, y_base, z_entrance)
-    brf = (x_center + tunnel_width/2, y_base, z_entrance)
-    tlf = (x_center - tunnel_width/2, y_base + tunnel_height, z_entrance)
-    trf = (x_center + tunnel_width/2, y_base + tunnel_height, z_entrance)
+    # Front face (entrance)
+    blf = (x_center - tunnel_width / 2, y_base, z_entrance)
+    brf = (x_center + tunnel_width / 2, y_base, z_entrance)
+    tlf = (x_center - tunnel_width / 2, y_base + tunnel_height, z_entrance)
+    trf = (x_center + tunnel_width / 2, y_base + tunnel_height, z_entrance)
 
-    # back face
-    blb = (x_center - tunnel_width/2, y_base, z_entrance - tunnel_depth)
-    brb = (x_center + tunnel_width/2, y_base, z_entrance - tunnel_depth)
-    tlb = (x_center - tunnel_width/2, y_base + tunnel_height, z_entrance - tunnel_depth)
-    trb = (x_center + tunnel_width/2, y_base + tunnel_height, z_entrance - tunnel_depth)
+    # Back face
+    blb = (x_center - tunnel_width / 2, y_base, z_entrance - tunnel_depth)
+    brb = (x_center + tunnel_width / 2, y_base, z_entrance - tunnel_depth)
+    tlb = (x_center - tunnel_width / 2, y_base + tunnel_height, z_entrance - tunnel_depth)
+    trb = (x_center + tunnel_width / 2, y_base + tunnel_height, z_entrance - tunnel_depth)
 
-    glColor3f(0.6, 0.2, 0.2)
+    glColor3f(0.5, 0.2, 0.2)  # Brick red color
     glBegin(GL_QUADS)
 
-    # front face
+    # Front face
     glVertex3f(*blf)
     glVertex3f(*brf)
     glVertex3f(*trf)
     glVertex3f(*tlf)
 
-    # back face
+    # Back face
     glVertex3f(*blb)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*tlb)
-    
-    # left face
+
+    # Left face
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*tlb)
     glVertex3f(*tlf)
-    
-    # right face
+
+    # Right face
     glVertex3f(*brf)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-    
-    # top face
+
+    # Top face
     glVertex3f(*tlf)
     glVertex3f(*tlb)
     glVertex3f(*trb)
     glVertex3f(*trf)
-    
-    # bottom face
+
+    # Bottom face
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*brb)
     glVertex3f(*brf)
     glEnd()
 
-    # black front face to give the illusion of a tunnel entrance
-    glEnable(GL_POLYGON_OFFSET_FILL) # prevents z-fighting
-    glPolygonOffset(-1.0, -1.0)  # bring the entrance forward so its visible
-    glColor3f(0.0, 0.0, 0.0)
+    # Black front face to give the illusion of a tunnel entrance
+    glEnable(GL_POLYGON_OFFSET_FILL)  # Prevents Z-fighting
+    glPolygonOffset(-1.0, -1.0)  # Bring the entrance forward so it's visible
+    glColor3f(0.0, 0.0, 0.0)  # Black color
 
-    # define vertices for entrance rectangle
+    # Define vertices for entrance rectangle
     entrance_width = tunnel_width
     entrance_height = tunnel_height
     be_left = x_center - entrance_width / 2
@@ -544,11 +1231,11 @@ def draw_tunnel():
     glDisable(GL_POLYGON_OFFSET_FILL)
 
 def draw_water():
-    """Draws a river"""
-    glColor3f(0, 0.5, 1)  # keep darker than skybox color
+    """Draws a river."""
+    glColor3f(0, 0.5, 1)  # Keep darker than skybox color
     glBegin(GL_QUADS)
 
-    # long skinny quad for river
+    # Long skinny quad for river
     glVertex3f(-120, 0.01, -150)
     glVertex3f(-100, 0.01, -150)
     glVertex3f(-100, 0.01, 150)
@@ -556,35 +1243,35 @@ def draw_water():
     glEnd()
 
 def draw_pyramid(base_size, height, position, color):
-    """Helper function to draw a mountain/pyramid with snowy peak"""
+    """Helper function to draw a mountain/pyramid with a snowy peak."""
     x, y, z = position
     half_base = base_size / 2
-    peak_color = (1.0, 1.0, 1.0)  # white color for snowy peak
+    peak_color = (1.0, 1.0, 1.0)  # White color for snowy peak
 
     glBegin(GL_TRIANGLES)
 
-    # front face
-    glColor3f(*color)  # base color
-    glVertex3f(x - half_base, y, z - half_base)  # base bottom-left
-    glVertex3f(x + half_base, y, z - half_base)  # base bottom-right
-    glColor3f(*peak_color)  # gradient from base color to peak color
+    # Front face
+    glColor3f(*color)  # Base color
+    glVertex3f(x - half_base, y, z - half_base)  # Base bottom-left
+    glVertex3f(x + half_base, y, z - half_base)  # Base bottom-right
+    glColor3f(*peak_color)  # Gradient from base color to peak color
     glVertex3f(x, y + height, z)
 
-    # right face
+    # Right face
     glColor3f(*color)
     glVertex3f(x + half_base, y, z - half_base)
     glVertex3f(x + half_base, y, z + half_base)
     glColor3f(*peak_color)
     glVertex3f(x, y + height, z)
 
-    # back face
+    # Back face
     glColor3f(*color)
     glVertex3f(x + half_base, y, z + half_base)
     glVertex3f(x - half_base, y, z + half_base)
     glColor3f(*peak_color)
     glVertex3f(x, y + height, z)
 
-    # left face
+    # Left face
     glColor3f(*color)
     glVertex3f(x - half_base, y, z + half_base)
     glVertex3f(x - half_base, y, z - half_base)
@@ -592,8 +1279,8 @@ def draw_pyramid(base_size, height, position, color):
     glVertex3f(x, y + height, z)
     glEnd()
 
-    # base of pyramid
-    glColor3f(color[0] * 0.7, color[1] * 0.7, color[2] * 0.7)  # slightly darker color
+    # Base of pyramid
+    glColor3f(color[0] * 0.7, color[1] * 0.7, color[2] * 0.7)  # Slightly darker color
     glBegin(GL_QUADS)
     glVertex3f(x - half_base, y, z - half_base)
     glVertex3f(x + half_base, y, z - half_base)
@@ -602,10 +1289,9 @@ def draw_pyramid(base_size, height, position, color):
     glEnd()
 
 def draw_background():
-    """Draws many pyramids to create a mountain range"""
+    """Draws many pyramids to create a mountain range."""
     pyramids = [
-        
-        # main cluster
+        # Main cluster
         (50, 30, (-20, 0, -100)),
         (60, 40, (0, 0, -120)),
         (70, 50, (20, 0, -110)),
@@ -616,7 +1302,7 @@ def draw_background():
         (50, 30, (50, 0, -100)),
         (35, 22, (-35, 0, -120)),
 
-        # left cluster
+        # Left cluster
         (40, 26, (-70, 0, -100)),
         (50, 35, (-90, 0, -120)),
         (60, 40, (-110, 0, -110)),
@@ -624,7 +1310,7 @@ def draw_background():
         (55, 38, (-150, 0, -130)),
         (50, 35, (-170, 0, -110)),
 
-        # right cluster
+        # Right cluster
         (40, 26, (70, 0, -100)),
         (50, 35, (90, 0, -120)),
         (60, 40, (110, 0, -110)),
@@ -633,91 +1319,112 @@ def draw_background():
         (50, 35, (170, 0, -110)),
     ]
 
-    mountain_color = (0.6, 0.4, 0.2)
+    mountain_color = (0.6, 0.4, 0.2)  # Earthy brown color
 
-    # draw the pyramids
+    # Draw the pyramids
     for base_size, height, position in pyramids:
         draw_pyramid(base_size, height, position, mountain_color)
 
-# initial camera position and rotation
+# Initial camera position and rotation
 camera_pos = [0, 10, -30]
 camera_rotation = [20, 0]
 
 def camera_controls():
-    """Handles keyboard input for camera controls"""
+    """Handles keyboard input for camera controls."""
     global camera_pos, camera_rotation
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: camera_pos[2] += 1  # moves forward along Z-axis
-    if keys[pygame.K_s]: camera_pos[2] -= 1  # moves backward along Z-axis
-    if keys[pygame.K_a]: camera_pos[0] -= 1  # moves left along X-axis
-    if keys[pygame.K_d]: camera_pos[0] += 1  # moves right along X-axis
-    if keys[pygame.K_UP]: camera_rotation[0] += 1  # pitch up
-    if keys[pygame.K_DOWN]: camera_rotation[0] -= 1  # pitch down
-    if keys[pygame.K_LEFT]: camera_rotation[1] -= 1  # yaw left
-    if keys[pygame.K_RIGHT]: camera_rotation[1] += 1  # yaw right
+    if keys[pygame.K_w]: camera_pos[2] += 1  # Move forward along Z-axis
+    if keys[pygame.K_s]: camera_pos[2] -= 1  # Move backward along Z-axis
+    if keys[pygame.K_a]: camera_pos[0] -= 1  # Move left along X-axis
+    if keys[pygame.K_d]: camera_pos[0] += 1  # Move right along X-axis
+    if keys[pygame.K_UP]: camera_rotation[0] += 1  # Pitch up
+    if keys[pygame.K_DOWN]: camera_rotation[0] -= 1  # Pitch down
+    if keys[pygame.K_LEFT]: camera_rotation[1] -= 1  # Yaw left
+    if keys[pygame.K_RIGHT]: camera_rotation[1] += 1  # Yaw right
 
 def apply_camera():
-    """Applies camera's position and rotation"""
+    """Applies camera's position and rotation."""
     glLoadIdentity()
     glTranslatef(*camera_pos)
     glRotatef(camera_rotation[0], 1, 0, 0)
     glRotatef(camera_rotation[1], 0, 1, 0)
-
-def setMaterial(r, g, b):
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
 
 def main():
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    glEnable(GL_COLOR_MATERIAL)
-    glLight(GL_LIGHT0, GL_POSITION, [1.0, 100.0, 1.0, 1.0])
-    coliseum_position = [75, 0, 75]  # [x, y, z] coordinates for the coliseum
 
-    # not working currently
-    global ground_texture
-    ground_texture = load_texture('ground.jpg')  # load ground texture image
+    global ground_texture_id
+    ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
+
+    coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
+
+    #prt position variables
+    previousTime = time.time()
+    delta = 0
+    global position
+    position = 0
+    speed = 0
+    maxSpeed = 4.5
+    minSpeed = 0
+    acceleration = 1.5
+    global position2
+    position2 = 3
+    speed2 = 0
 
     while True:
+        #prt position
+        delta = time.time() - previousTime
+        previousTime = time.time()
+        speed += acceleration*delta
+        if speed > maxSpeed:
+            speed = maxSpeed
+        if speed < minSpeed:
+            speed = minSpeed
+        position += speed*delta
+        speed2 += acceleration*delta
+        if speed2 > maxSpeed:
+            speed2 = maxSpeed
+        if speed2 < minSpeed:
+            speed2 = minSpeed
+        position2 += speed2*delta
+        if position > 112:
+            position = 0
+            speed = 0
+        if position2 > 112:
+            position2 = 0
+            speed2 = 0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            elif event.type == KEYDOWN:
+                if event.key == K_p:
+                    acceleration = -acceleration #stop prt cars
 
-        camera_controls()  # update camera based on user input
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # clear screen and depth buffer
-        apply_camera()  # apply camera transformations
-        
-        # draw scene
+        camera_controls()  # Update camera based on user input
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear screen and depth buffer
+        apply_camera()  # Apply camera transformations
+
+        glLightfv(GL_LIGHT0, GL_POSITION, [1.0, 100.0, 1.0, 1.0])
+
+        # Draw scene
         draw_tunnel()
         draw_ground()
         draw_road()
         draw_water()
         draw_background()
+        draw_prt()
         
-        
-        glPushMatrix()  # Save the current transformation matrix
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
-
         # Draw the coliseum components
         draw_cylinder(30, 50, 25, offset=0)
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
-        
-        glPopMatrix()  # Restore the previous transformation matrix
-        
-        # Draw houses
-        draw_house((.5, .5, .5), (-20,0,0), False)
-        draw_house((.5, .5, .5), (-20,0,40), True)
 
-        pygame.display.flip()  # swap buffers
-        pygame.time.wait(10)  # small delay to control camera speed
+        pygame.display.flip()  # Swap buffers
+        pygame.time.wait(10)  # Small delay to control camera speed
 
-        
 main()
