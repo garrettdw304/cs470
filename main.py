@@ -229,6 +229,7 @@ def draw_model(model : Model):
 
 def cube(xSize, ySize, zSize):
     glBegin(GL_POLYGON)
+    glNormal3f(0, -1, 0)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
@@ -236,6 +237,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 1, 0)
     glVertex3f(-xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, zSize/2)
@@ -243,6 +245,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(1, 0, 0)
     glVertex3f(-xSize/2, ySize/2, -zSize/2)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(-xSize/2, -ySize/2, zSize/2)
@@ -250,6 +253,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(-1, 0, 0)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
@@ -257,6 +261,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, 1)
     glVertex3f(-xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, -ySize/2, -zSize/2)
     glVertex3f(xSize/2, ySize/2, -zSize/2)
@@ -264,6 +269,7 @@ def cube(xSize, ySize, zSize):
     glEnd()
 
     glBegin(GL_POLYGON)
+    glNormal3f(0, 0, -1)
     glVertex3f(-xSize/2, -ySize/2, zSize/2)
     glVertex3f(xSize/2, -ySize/2, zSize/2)
     glVertex3f(xSize/2, ySize/2, zSize/2)
