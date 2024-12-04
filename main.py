@@ -1500,16 +1500,19 @@ def draw_tunnel():
     glDisable(GL_POLYGON_OFFSET_FILL)
 
 def draw_water():
-    """Draws a river."""
-    glColor3f(0, 0.5, 1)  # Keep darker than skybox color
+    glEnable(GL_TEXTURE_2D)  # Enable texture mapping
+    glBindTexture(GL_TEXTURE_2D, water_texture_id)
+    glColor3f(1, 1, 1)  # Keep darker than skybox color
     glBegin(GL_QUADS)
 
+    glNormal3f(0, 1, 0)  # Normal pointing up
     # Long skinny quad for river
-    glVertex3f(-120, 0.01, -150)
-    glVertex3f(-100, 0.01, -150)
-    glVertex3f(-100, 0.01, 150)
-    glVertex3f(-120, 0.01, 150)
+    glTexCoord2f(0, 0); glVertex3f(-120, 0.01, -150)
+    glTexCoord2f(1, 0); glVertex3f(-100, 0.01, -150)
+    glTexCoord2f(1, 10); glVertex3f(-100, 0.01, 150)
+    glTexCoord2f(0, 10);glVertex3f(-120, 0.01, 150)
     glEnd()
+    glDisable(GL_TEXTURE_2D)  # Disable textures for subsequent objects
 
 def draw_pyramid(base_size, height, position, color):
     """Helper function to draw a mountain/pyramid with a snowy peak."""
@@ -1641,14 +1644,14 @@ def camera_controls():
     """Handles keyboard input for camera controls."""
     global camera_pos, camera_rotation
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]: camera_pos[2] += 1  # Move forward along Z-axis
-    if keys[pygame.K_s]: camera_pos[2] -= 1  # Move backward along Z-axis
-    if keys[pygame.K_a]: camera_pos[0] -= 1  # Move left along X-axis
-    if keys[pygame.K_d]: camera_pos[0] += 1  # Move right along X-axis
-    if keys[pygame.K_UP]: camera_rotation[0] += 1  # Pitch up
-    if keys[pygame.K_DOWN]: camera_rotation[0] -= 1  # Pitch down
-    if keys[pygame.K_LEFT]: camera_rotation[1] -= 1  # Yaw left
-    if keys[pygame.K_RIGHT]: camera_rotation[1] += 1  # Yaw right
+    if keys[pygame.K_w]: camera_pos[2] += 2  # Move forward along Z-axis
+    if keys[pygame.K_s]: camera_pos[2] -= 2  # Move backward along Z-axis
+    if keys[pygame.K_a]: camera_pos[0] -= 2  # Move left along X-axis
+    if keys[pygame.K_d]: camera_pos[0] += 2  # Move right along X-axis
+    if keys[pygame.K_UP]: camera_rotation[0] += 2  # Pitch up
+    if keys[pygame.K_DOWN]: camera_rotation[0] -= 2  # Pitch down
+    if keys[pygame.K_LEFT]: camera_rotation[1] -= 2  # Yaw left
+    if keys[pygame.K_RIGHT]: camera_rotation[1] += 2  # Yaw right
 
 def apply_camera():
     """Applies camera's position and rotation."""
@@ -1743,7 +1746,10 @@ def main():
     # We will set the light position in the main loop after applying camera transformations
 
     global ground_texture_id
-    ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
+    ground_texture_id = load_texture('snow.jpg')  # Load the ground texture
+
+    global water_texture_id
+    water_texture_id = load_texture('river.jpg')  # Load the water texture
 
     coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
