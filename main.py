@@ -8,6 +8,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from PIL import Image
+import numpy as np
 
 global timeVar; timeVar = 0  # Time since the beginning of the program
 
@@ -193,35 +194,50 @@ class Model:
             texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Model(vertices, normals, uvs, faces, material, texture, -1)
 
-def draw_model(model : Model):
+def draw_model(model: Model):
     if model.texture is not None:
         model.bind_texture()
     model.material.bind()
-    length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
-    for face in model.faces:
-        if len(face) != length:
-            if length != -1:
-                glEnd()
-            length = len(face)
-            if length != 3 or length != 4:
-                length = 0
-            if length == 3:
-                glBegin(GL_TRIANGLES)
-            elif length == 4:
-                glBegin(GL_QUADS)
-            else:
-                glBegin(GL_POLYGON)
-        elif length == 0:
-            glEnd()
-            glBegin(GL_POLYGON)
 
-        for indices in face:  # Each 'indices' contains 3 vertex indices: 0 -> mesh vertex index, 1 -> texture vertex index, 2 -> normal vertex index
-            glNormal3fv(model.normals[indices[2]])
+    # Prepare arrays for vertex positions, normals, and texture coordinates
+    vertices = []
+    normals = []
+    tex_coords = []
+
+    for face in model.faces:
+        for indices in face:
+            vertices.extend(model.vertices[indices[0]])
+            normals.extend(model.normals[indices[2]])
             if model.texture is not None:
-                glTexCoord2fv(model.uvs[indices[1]])
-            glVertex3fv(model.vertices[indices[0]])
-    if length != -1:
-        glEnd()
+                tex_coords.extend(model.uvs[indices[1]])
+
+    # Convert lists to NumPy arrays
+    vertices_array = np.array(vertices, dtype=np.float32)
+    normals_array = np.array(normals, dtype=np.float32)
+    if model.texture is not None:
+        tex_coords_array = np.array(tex_coords, dtype=np.float32)
+
+    # Enable client states
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_NORMAL_ARRAY)
+    if model.texture is not None:
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+
+    # Set pointers
+    glVertexPointer(3, GL_FLOAT, 0, vertices_array)
+    glNormalPointer(GL_FLOAT, 0, normals_array)
+    if model.texture is not None:
+        glTexCoordPointer(2, GL_FLOAT, 0, tex_coords_array)
+
+    # Draw arrays
+    glDrawArrays(GL_TRIANGLES, 0, len(vertices) // 3)
+
+    # Disable client states
+    glDisableClientState(GL_VERTEX_ARRAY)
+    glDisableClientState(GL_NORMAL_ARRAY)
+    if model.texture is not None:
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+
     if model.texture is not None:
         model.unbind_texture()
     model.material.unbind()
@@ -1144,6 +1160,9 @@ def draw_trees():
         draw_tree(heightOffs[i], heights[i], trunks[i], widths[i], positionsX[i], positionsY[i], greens[i])
 
 def draw_cylinder(radius, segments, height, offset=0):
+    
+    glDisable(GL_LIGHTING)  # Disable lighting for the coliseum
+
     # Draw the bottom face
     glBegin(GL_TRIANGLE_FAN)
     glColor3f(0.96, 0.87, 0.70)  # Beige color
@@ -1177,6 +1196,8 @@ def draw_cylinder(radius, segments, height, offset=0):
         glVertex3f(x, offset + height, z)  # Top vertex
     glEnd()
 
+    glEnable(GL_LIGHTING)  
+    
 # Function to draw walls for the coliseum (upright)
 def draw_coliseum_walls(radius, segments, height, protrusion=1):
     wall_radius = radius + protrusion  # Increase radius for protrusion
@@ -1190,8 +1211,9 @@ def draw_coliseum_walls(radius, segments, height, protrusion=1):
         # Leave gaps for arches or windows
         if i % 4 == 0:  # Adjust this value to control the number of gaps
             continue
-
+        
         glBegin(GL_QUADS)
+        glNormal3f(0, 1, 0)  # Normal pointing up
         glColor3f(0.98, 0.92, 0.78)  # Slightly lighter beige
         glVertex3f(x1, 0, z1)           # Bottom-left corner
         glVertex3f(x2, 0, z2)           # Bottom-right corner
@@ -1206,8 +1228,10 @@ def draw_dome(radius, segments, rings, offset, height_scale=0.5):
     for i in range(rings):
         theta1 = math.pi * i / (2 * rings)  # Latitude angle (bottom to top)
         theta2 = math.pi * (i + 1) / (2 * rings)
-
+        
         glBegin(GL_TRIANGLE_STRIP)
+        glNormal3f(0, 1, 0)  # Normal pointing up
+    
         for j in range(segments + 1):
             phi = 2 * math.pi * j / segments  # Longitude angle (around)
 
@@ -1222,7 +1246,7 @@ def draw_dome(radius, segments, rings, offset, height_scale=0.5):
             y2 = radius * math.cos(theta2) * height_scale  # Scaled height
             z2 = radius * math.sin(theta2) * math.sin(phi)
             glVertex3f(x2, y2 + offset, z2)
-        glEnd()
+        glEnd()        
 
 def init_opengl():
     """Initializes OpenGL settings and projection matrix."""
@@ -1243,12 +1267,12 @@ def init_opengl():
 
 def draw_ground():
     """Draws the ground plane with a texture."""
-    glDisable(GL_LIGHTING)  # Disable lighting for the ground
     glEnable(GL_TEXTURE_2D)  # Enable texture mapping
     glBindTexture(GL_TEXTURE_2D, ground_texture_id)
     glColor3f(1.0, 1.0, 1.0)  # Set color to white to display texture colors accurately
 
     glBegin(GL_QUADS)
+    glNormal3f(0, 1, 0)  # Normal pointing up
     # Repeat the texture 10 times across the ground
     glTexCoord2f(0.0, 0.0); glVertex3f(-150, -2, 150)
     glTexCoord2f(10.0, 0.0); glVertex3f(150, -2, 150)
@@ -1349,6 +1373,7 @@ def draw_road():
     # Draw the straight road
     glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
+    glNormal3f(0, 1, 0)  # Normal pointing up
     glVertex3f(-6, 0.01, -150)
     glVertex3f(6, 0.01, -150)
     glVertex3f(6, 0.01, 150)
@@ -1391,6 +1416,7 @@ def draw_road():
 
     glColor3f(0.2, 0.2, 0.2)  # Dark gray color for the road
     glBegin(GL_QUADS)
+    glNormal3f(0, 1, 0)  # Normal pointing up
     glVertex3f(x_start_left, 0.01, z_start_left)
     glVertex3f(x_start_right, 0.01, z_start_right)
     glVertex3f(x_end_right, 0.01, z_end_right)
@@ -1427,36 +1453,42 @@ def draw_tunnel():
     glBegin(GL_QUADS)
 
     # Front face
+    glNormal3f(0, 0, 1)  # Normal facing forward
     glVertex3f(*blf)
     glVertex3f(*brf)
     glVertex3f(*trf)
     glVertex3f(*tlf)
 
     # Back face
+    glNormal3f(0, 0, -1)  # Normal facing backward
     glVertex3f(*blb)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*tlb)
 
     # Left face
+    glNormal3f(-1, 0, 0)  # Normal facing left
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*tlb)
     glVertex3f(*tlf)
 
     # Right face
+    glNormal3f(1, 0, 0)  # Normal facing right
     glVertex3f(*brf)
     glVertex3f(*brb)
     glVertex3f(*trb)
     glVertex3f(*trf)
 
     # Top face
+    glNormal3f(0, 1, 0)  # Normal facing up
     glVertex3f(*tlf)
     glVertex3f(*tlb)
     glVertex3f(*trb)
     glVertex3f(*trf)
 
     # Bottom face
+    glNormal3f(0, -1, 0)  # Normal facing down
     glVertex3f(*blf)
     glVertex3f(*blb)
     glVertex3f(*brb)
@@ -1639,27 +1671,95 @@ def apply_camera():
     glRotatef(camera_rotation[0], 1, 0, 0)
     glRotatef(camera_rotation[1], 0, 1, 0)
 
-def setMaterial(r, g, b):
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
+# Initialize global variables for the day/night cycle
+is_day = True           # Indicates whether it's currently day
+transition_in_progress = False  # Indicates if a transition is happening
+transition_start_time = 0       # Time when the transition started
+transition_duration = 5000      # Duration of the transition in milliseconds (5 seconds)
+
+# Light position variables
+day_light_position = [0.0, 100.0, 0.0, 1.0]   # High in the sky
+night_light_position = [0.0, -100.0, 0.0, 1.0]  # Below the scene
+current_light_position = day_light_position.copy()
+
+# Background color
+background_color = [0.53, 0.81, 0.92, 1.0]  # Initial sky color (day)
+
+# Initialize time variable for human animation
+timeVar = 0
+
+def lerp(start, end, t):
+    """Linear interpolation between start and end by t."""
+    return start + t * (end - start)
+
+def update_day_night_cycle():
+    """Updates the light position and sky color during the day/night transition."""
+    global transition_in_progress, transition_start_time, current_light_position, background_color
+
+    if transition_in_progress:
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - transition_start_time
+        t = min(elapsed / transition_duration, 1.0)  # Normalized time [0.0, 1.0]
+
+        if is_day:
+            # Transitioning from night to day
+            current_light_position = [
+                lerp(night_light_position[i], day_light_position[i], t)
+                for i in range(4)
+            ]
+            background_color = [
+                lerp(0.05, 0.53, t),  # Red component
+                lerp(0.05, 0.81, t),  # Green component
+                lerp(0.15, 0.92, t),  # Blue component
+                1.0                    # Alpha
+            ]
+        else:
+            # Transitioning from day to night
+            current_light_position = [
+                lerp(day_light_position[i], night_light_position[i], t)
+                for i in range(4)
+            ]
+            background_color = [
+                lerp(0.53, 0.05, t),  # Red component
+                lerp(0.81, 0.05, t),  # Green component
+                lerp(0.92, 0.15, t),  # Blue component
+                1.0                    # Alpha
+            ]
+
+        # Update the background color
+        glClearColor(*background_color)
+
+        if t >= 1.0:
+            # Transition complete
+            transition_in_progress = False
+    else:
+        # No transition in progress; ensure light and background are set correctly
+        if is_day:
+            current_light_position = day_light_position.copy()
+            background_color = [0.53, 0.81, 0.92, 1.0]  # Sky blue
+        else:
+            current_light_position = night_light_position.copy()
+            background_color = [0.05, 0.05, 0.15, 1.0]  # Dark blue
+
+        glClearColor(*background_color)
+
 
 def main():
     global timeVar
+    global is_day, transition_in_progress, transition_start_time, current_light_position, background_color
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
     glEnable(GL_LIGHT0)
-    glLightfv(GL_LIGHT0, GL_POSITION, [1, 15, 1, 1])
+    # We will set the light position in the main loop after applying camera transformations
 
     global ground_texture_id
     ground_texture_id = load_texture('grass.jpg')  # Load the ground texture
 
     coliseum_position = [-55, 0, -15]  # [x, y, z] coordinates for the coliseum
 
-    #prt position variables
+    # PRT position variables
     previousTime = time.time()
     delta = 0
     global position
@@ -1672,6 +1772,7 @@ def main():
     position2 = 3
     speed2 = 0
 
+    # Initialize default material properties
     Model.default_material.specular_reflection = glGetMaterialfv(GL_FRONT, GL_SPECULAR)
     Model.default_material.ambient_reflection = glGetMaterialfv(GL_FRONT, GL_AMBIENT)
     Model.default_material.diffused_reflection = glGetMaterialfv(GL_FRONT, GL_DIFFUSE)
@@ -1683,29 +1784,35 @@ def main():
     cars = []
 
     # Load Models
-    car_model = Model.load("Resources/car.obj", "Resources/Car.png"); car_model.send_texture(); car_model.unbind_texture()
-    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png"); human_body_model.send_texture(); human_body_model.unbind_texture()
-    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png"); human_arm_model.send_texture(); human_arm_model.unbind_texture()
+    car_model = Model.load("Resources/car.obj", "Resources/Car.png")
+    car_model.send_texture()
+    car_model.unbind_texture()
+    human_body_model = Model.load("Resources/humanbody.obj", "Resources/Human.png")
+    human_body_model.send_texture()
+    human_body_model.unbind_texture()
+    human_arm_model = Model.load("Resources/humanarm.obj", "Resources/Human.png")
+    human_arm_model.send_texture()
+    human_arm_model.unbind_texture()
 
     global houseObjects
     houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
 
     while True:
-        #prt position
+        # PRT position updates
         delta = time.time() - previousTime
         previousTime = time.time()
-        speed += acceleration*delta
+        speed += acceleration * delta
         if speed > maxSpeed:
             speed = maxSpeed
         if speed < minSpeed:
             speed = minSpeed
-        position += speed*delta
-        speed2 += acceleration*delta
+        position += speed * delta
+        speed2 += acceleration * delta
         if speed2 > maxSpeed:
             speed2 = maxSpeed
         if speed2 < minSpeed:
             speed2 = minSpeed
-        position2 += speed2*delta
+        position2 += speed2 * delta
         if position > 112:
             position = 0
             speed = 0
@@ -1719,16 +1826,29 @@ def main():
                 quit()
             elif event.type == KEYDOWN:
                 if event.key == K_p:
-                    acceleration = -acceleration #stop prt cars
+                    acceleration = -acceleration  # Stop PRT cars
                 elif event.key == K_h:
-                    if human.is_waving: human.stop_waving()
-                    else: human.start_waving(timeVar)
+                    if human.is_waving:
+                        human.stop_waving()
+                    else:
+                        human.start_waving(timeVar)
+                elif event.key == K_n:
+                    if not transition_in_progress:
+                        transition_in_progress = True
+                        transition_start_time = pygame.time.get_ticks()
+                        is_day = not is_day  # Toggle between day and night
 
         camera_controls()  # Update camera based on user input
+
+        # Update the day/night transition before clearing the screen
+        update_day_night_cycle()
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear screen and depth buffer
+
         apply_camera()  # Apply camera transformations
 
-        glLightfv(GL_LIGHT0, GL_POSITION, [1.0, 100.0, 1.0, 1.0])
+        # Set the light position after applying camera transformations
+        glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
         # Draw scene
         draw_tunnel()
@@ -1739,12 +1859,14 @@ def main():
         draw_prt()
         draw_trees()
         draw_human(human, human_body_model, human_arm_model)
-    
+
+        glPushMatrix()
         glTranslatef(*coliseum_position)  # Move the coliseum to its specified position
         # Draw the coliseum components
         draw_cylinder(30, 50, 25, offset=0)
         draw_coliseum_walls(30, 50, 25)
         draw_dome(30, 50, 20, offset=25)
+        glPopMatrix()
 
         draw_house_at((30,0,0), False, (.5,.5,.5))
 
