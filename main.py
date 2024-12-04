@@ -194,50 +194,35 @@ class Model:
             texture = Image.open(texture_file).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert("RGB").tobytes()
         return Model(vertices, normals, uvs, faces, material, texture, -1)
 
-def draw_model(model: Model):
+def draw_model(model : Model):
     if model.texture is not None:
         model.bind_texture()
     model.material.bind()
-
-    # Prepare arrays for vertex positions, normals, and texture coordinates
-    vertices = []
-    normals = []
-    tex_coords = []
-
+    length = -1  # -1 -> glBegin has not been called, 0 -> drawing polygons, 3 -> drawing triangles, 4 -> drawing quads
     for face in model.faces:
-        for indices in face:
-            vertices.extend(model.vertices[indices[0]])
-            normals.extend(model.normals[indices[2]])
+        if len(face) != length:
+            if length != -1:
+                glEnd()
+            length = len(face)
+            if length != 3 or length != 4:
+                length = 0
+            if length == 3:
+                glBegin(GL_TRIANGLES)
+            elif length == 4:
+                glBegin(GL_QUADS)
+            else:
+                glBegin(GL_POLYGON)
+        elif length == 0:
+            glEnd()
+            glBegin(GL_POLYGON)
+
+        for indices in face:  # Each 'indices' contains 3 vertex indices: 0 -> mesh vertex index, 1 -> texture vertex index, 2 -> normal vertex index
+            glNormal3fv(model.normals[indices[2]])
             if model.texture is not None:
-                tex_coords.extend(model.uvs[indices[1]])
-
-    # Convert lists to NumPy arrays
-    vertices_array = np.array(vertices, dtype=np.float32)
-    normals_array = np.array(normals, dtype=np.float32)
-    if model.texture is not None:
-        tex_coords_array = np.array(tex_coords, dtype=np.float32)
-
-    # Enable client states
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glEnableClientState(GL_NORMAL_ARRAY)
-    if model.texture is not None:
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
-
-    # Set pointers
-    glVertexPointer(3, GL_FLOAT, 0, vertices_array)
-    glNormalPointer(GL_FLOAT, 0, normals_array)
-    if model.texture is not None:
-        glTexCoordPointer(2, GL_FLOAT, 0, tex_coords_array)
-
-    # Draw arrays
-    glDrawArrays(GL_TRIANGLES, 0, len(vertices) // 3)
-
-    # Disable client states
-    glDisableClientState(GL_VERTEX_ARRAY)
-    glDisableClientState(GL_NORMAL_ARRAY)
-    if model.texture is not None:
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
-
+                glTexCoord2fv(model.uvs[indices[1]])
+            glVertex3fv(model.vertices[indices[0]])
+    if length != -1:
+        glEnd()
     if model.texture is not None:
         model.unbind_texture()
     model.material.unbind()
@@ -1763,12 +1748,15 @@ def main():
     draw_road()
     draw_water()
     draw_background()
-    draw_prt()
     draw_trees()
     glEndList()
 
     global houseObjects
     houseObjects = [Model.load("Resources/furniture.obj"), Model.load("Resources/doors.obj"), Model.load("Resources/walls.obj"), Model.load("Resources/roof.obj")]
+    house_dl = glGenLists(1)
+    glNewList(house_dl, GL_COMPILE)
+    draw_house_at((30,0,0), False, (.5,.5,.5))
+    glEndList()
 
     while True:
         # PRT position updates
@@ -1826,6 +1814,7 @@ def main():
         glLightfv(GL_LIGHT0, GL_POSITION, current_light_position)
 
         # Draw scene
+        draw_prt()
         glCallList(scene_dl)
         draw_human(human, human_body_model, human_arm_model)
         for car in cars:
@@ -1844,7 +1833,7 @@ def main():
         draw_dome(30, 50, 20, offset=25)
         glPopMatrix()
 
-        draw_house_at((30,0,0), False, (.5,.5,.5))
+        glCallList(house_dl)
 
         pygame.display.flip()  # Swap buffers
         pygame.time.wait(10)  # Small delay to control camera speed
