@@ -525,11 +525,9 @@ def draw_prt():
         glPushMatrix()
         glScale(1.2, 1.2, 1.2)
         glRotatef(90, 0, 1, 0)
-        glTranslatef(-40, 10, -10)
+        glTranslatef(-40, 10, 10)
         prtStraightTrack(True)
-        glTranslatef(0, 0, 10)
-        prtStraightTrack(False)
-        glTranslatef(0, 0, 10)
+        glTranslatef(0, 0, -10)
         prtStraightTrack(False)
 
         glPushMatrix()
@@ -550,6 +548,20 @@ def draw_prt():
             glTranslatef(0, 0, -1)
         glTranslatef(0, 0, -5)
         prtStraightTrack(True)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(True)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(True)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, -10)
+        prtStraightTrack(False)
         glPopMatrix()
 
         glPushMatrix()
@@ -560,7 +572,33 @@ def draw_prt():
             glScalef(1, 1, 3)
             glRotatef(5, 0, 1, 0)
             glTranslatef(0, 0, 1)
+        
         glTranslatef(0, 0, 5)
+        prtStraightTrack(True)
+
+        glTranslatef(0, 0, 5)
+        for i in range(1,19):
+            glScalef(1, 1, 0.333)
+            prtStraightTrack(False)
+            glScalef(1, 1, 3)
+            glRotatef(-5, 0, 1, 0)
+            glTranslatef(0, 0, 1)
+        
+        glTranslatef(0, 0, 5)
+        prtStraightTrack(True)
+
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(True)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(False)
+        glTranslatef(0, 0, 10)
+        prtStraightTrack(True)
 
         glPushMatrix()
         glScalef(2, 2, 2)
@@ -568,25 +606,41 @@ def draw_prt():
         glTranslatef(0, 0.5, 1.25)
         glPushMatrix()
 
-        glTranslatef(min(position, 3.5), 0, 0)
+        glTranslatef(min(position, 33), 0, 0)
+        print(position)
+        turns = max(0, min((position - 33)/0.306, 36))
+        for i in range(round(turns)):
+            glRotatef(2.5, 0, 1, 0)
+            glTranslatef(0.306, 0, -0.005)
+        if position > 33 and position < 44:
+            glTranslatef(position-33-round(turns)*0.306, 0, -0.016*(position-33-round(turns)*0.306))
 
-        turns = max(0, min((position - 3.5)/0.153, 36))
+        '''turns = max(0, min((position - 40)/0.153, 36))
         for i in range(round(turns)):
             glRotatef(-2.5, 0, 1, 0)
             glTranslatef(0.153, 0, -0.01)
-        if position > 3.5 and position < 9:
-            glTranslatef(position-3.5-round(turns)*0.153, 0, -0.065*(position-3.5-round(turns)*0.153))
+        if position > 40 and position < 45.5:
+            glTranslatef(position-40-round(turns)*0.153, 0, -0.065*(position-40-round(turns)*0.153))'''
 
-        glTranslatef(max(0, min(position-9, 12)), 0, 0)
+        glTranslatef(max(0, min(position-44, 5.75)), 0, 0)
         
-        turns = max(0, min((position - 21)/0.306, 36))
+        turns = max(0, min((position - 49.75)/0.153, 36))
+        for i in range(round(turns)):
+            glRotatef(-2.5, 0, 1, 0)
+            glTranslatef(0.153, 0, -0.01)
+        if position > 49.75 and position < 55.25:
+            glTranslatef(position-49.75-round(turns)*0.153, 0, 0.065*(position-49.75-round(turns)*0.153))
+        
+        glTranslatef(max(0, min(position-55.25, 12)), 0, 0)
+
+        '''turns = max(0, min((position - 21)/0.306, 36))
         for i in range(round(turns)):
             glRotatef(2.5, 0, 1, 0)
             glTranslatef(0.306, 0, -0.005)
         if position > 21 and position < 32:
             glTranslatef(position-21-round(turns)*0.306, 0, -0.016*(position-21-round(turns)*0.306))
         
-        glTranslatef(max(0, min(position-32, 4)), 0, 0)
+        glTranslatef(max(0, min(position-32, 4)), 0, 0)'''
  
         prtCar()
         glPopMatrix()
@@ -617,7 +671,7 @@ def draw_prt():
         prtCar()
         glPopMatrix()
 
-        prtStraightTrack(True)
+        #prtStraightTrack(True)
         glPopMatrix()
         glPopMatrix()
 
@@ -1066,12 +1120,6 @@ def apply_camera():
     glRotatef(camera_rotation[0], 1, 0, 0)
     glRotatef(camera_rotation[1], 0, 1, 0)
 
-def setMaterial(r, g, b):
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, [r*0.25, g*0.25, b*0.25, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [r, g, b, 1.0])
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, [r*0.5, g*0.5, b*0.5, 1.0])
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30)
-
 def main():
     pygame.init()
     display = (800, 600)
@@ -1108,10 +1156,10 @@ def main():
         if speed2 < minSpeed:
             speed2 = minSpeed
         position2 += speed2*delta
-        if position > 36:
+        if position > 100:
             position = 0
             speed = 0
-        if position2 > 36:
+        if position2 > 100:
             position2 = 0
             speed2 = 0
 
