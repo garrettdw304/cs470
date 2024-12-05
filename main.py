@@ -1764,7 +1764,7 @@ def main():
     lightOn = False
     lightDelta = 0
     pygame.init()
-    display = (800, 600)
+    display = (1920, 1080)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
     init_opengl()
     glEnable(GL_LIGHT0)
@@ -1904,6 +1904,9 @@ def main():
                         garage.stop_opening()
                     else:
                         garage.start_opening(timeVar)
+                elif event.key == K_ESCAPE:
+                    pygame.quit()
+                    quit()
 
         camera_controls()  # Update camera based on user input
 
